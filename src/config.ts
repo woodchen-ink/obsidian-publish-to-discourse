@@ -24,11 +24,11 @@ export class DiscourseSyncSettingsTab extends PluginSettingTab {
 	display(): void {
 		const { containerEl } = this;
 		containerEl.empty();
-		containerEl.createEl("h2", { text: "Discourse Sync" });
+		containerEl.createEl("h2", { text: "发布到 Discourse" });
 
 		new Setting(containerEl)
-			.setName("Base URL")
-			.setDesc("base url of discourse server")
+			.setName("论坛地址")
+			.setDesc("Discourse 论坛的网址")
 			.addText((text) =>
 				text
 					.setPlaceholder("https://forum.example.com")
@@ -40,8 +40,8 @@ export class DiscourseSyncSettingsTab extends PluginSettingTab {
 		);
 
 		new Setting(containerEl)
-			.setName("API Key")
-			.setDesc("user created API Key")
+			.setName("API 密钥")
+			.setDesc("用户创建的 API 密钥")
 			.addText((text) =>
 				text
 					.setPlaceholder("api_key")
@@ -53,8 +53,8 @@ export class DiscourseSyncSettingsTab extends PluginSettingTab {
 		);
 
 		new Setting(containerEl)
-			.setName("Username")
-			.setDesc("Discourse Username")
+			.setName("用户名")
+			.setDesc("Discourse 用户名")
 			.addText((text) =>
 				text
 					.setPlaceholder("username")

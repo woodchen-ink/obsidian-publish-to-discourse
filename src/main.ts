@@ -15,7 +15,7 @@ export default class DiscourseSyncPlugin extends Plugin {
 
 		this.addCommand({
 			id: "category-modal",
-			name: "Category Modal",
+			name: "发布到 Discourse",
 			callback: () => {
 				this.openCategoryModal();
 			},
@@ -118,6 +118,10 @@ export default class DiscourseSyncPlugin extends Plugin {
 			"Api-Username": this.settings.disUser,
 		}
 		let content = this.activeFile.content;
+
+		// 过滤掉笔记属性部分
+		content = content.replace(/^---[\s\S]*?---\n/, '');
+
 		const imageReferences = this.extractImageReferences(content);
 		const imageUrls = await this.uploadImages(imageReferences);
 
@@ -193,7 +197,7 @@ export default class DiscourseSyncPlugin extends Plugin {
 
 	registerDirMenu(menu: Menu, file: TFile) {
 		const syncDiscourse = (item: MenuItem) => {
-			item.setTitle("Sync to Discourse");
+			item.setTitle("发布到 Discourse");
 			item.onClick(async () => {
 				this.activeFile = {
 					name: file.basename,
@@ -273,28 +277,124 @@ export class SelectCategoryModal extends Modal {
 
 	onOpen() {
 		const { contentEl } = this;
-		contentEl.createEl("h1", { text: 'Select a category for syncing' });
-		const selectEl = contentEl.createEl('select');
+		
+		// 添加样式
+		contentEl.addClass('discourse-sync-modal');
+		const styleEl = document.head.createEl('style');
+		styleEl.textContent = `
+			.discourse-sync-modal {
+				padding: 20px;
+			}
+			.discourse-sync-modal h1 {
+				margin-bottom: 20px;
+				color: var(--text-normal);
+			}
+			.discourse-sync-modal .select-container {
+				margin-bottom: 24px;
+			}
+			.discourse-sync-modal select {
+				width: 100%;
+				padding: 8px 12px;
+				height: 42px;
+				line-height: 1.5;
+				border: 1px solid var(--background-modifier-border);
+				border-radius: 4px;
+				background-color: var(--background-primary);
+				color: var(--text-normal);
+			}
+			.discourse-sync-modal .submit-button {
+				width: 100%;
+				padding: 10px;
+				background-color: var(--interactive-accent);
+				color: var(--text-on-accent);
+				border: none;
+				border-radius: 4px;
+				cursor: pointer;
+				font-weight: 500;
+			}
+			.discourse-sync-modal .submit-button:hover {
+				background-color: var(--interactive-accent-hover);
+			}
+			.discourse-sync-modal .notice {
+				margin-top: 16px;
+				padding: 10px;
+				border-radius: 4px;
+				text-align: center;
+			}
+			.discourse-sync-modal .notice.success {
+				background-color: var(--background-modifier-success);
+				color: var(--text-success);
+			}
+			.discourse-sync-modal .notice.error {
+				background-color: var(--background-modifier-error);
+				color: var(--text-error);
+			}
+		`;
 
+		contentEl.createEl("h1", { text: '选择发布分类' });
+		
+		// 创建选择器容器
+		const selectContainer = contentEl.createEl('div', { cls: 'select-container' });
+		const selectLabel = selectContainer.createEl('label', { text: '分类' });
+		selectLabel.style.display = 'block';
+		selectLabel.style.marginBottom = '8px';
+		
+		const selectEl = selectContainer.createEl('select');
+		
 		this.categories.forEach(category => {
 			const option = selectEl.createEl('option', { text: category.name });
 			option.value = category.id.toString();
 		});
 
-		const submitButton = contentEl.createEl('button', { text: 'Submit' });
+		const submitButton = contentEl.createEl('button', { 
+			text: '发布',
+			cls: 'submit-button'
+		});
+
+		// 创建提示信息容器
+		const noticeContainer = contentEl.createEl('div');
+		
+		
 		submitButton.onclick = async () => {
 			const selectedCategoryId = selectEl.value;
 			this.plugin.settings.category = parseInt(selectedCategoryId);
 			await this.plugin.saveSettings();
+			
+			// 禁用提交按钮，显示加载状态
+			submitButton.disabled = true;
+			submitButton.textContent = '发布中...';
+			
 			const reply = await this.plugin.postTopic();
 			console.log(`postTopic message: ${reply.message}`);
 			console.log(`ID: ${selectedCategoryId}`);
-			this.close();
+
+			// 显示提示信息
+			noticeContainer.empty();
+			noticeContainer.createEl('div', { 
+				cls: `notice ${reply.message === 'Success' ? 'success' : 'error'}`,
+				text: reply.message === 'Success' ? '发布成功！' : '发布失败，请重试。'
+			});
+
+			if (reply.message === 'Success') {
+				// 成功后延迟关闭
+				setTimeout(() => {
+					this.close();
+				}, 1500);
+			} else {
+				// 失败时重置按钮状态
+				submitButton.disabled = false;
+				submitButton.textContent = '发布';
+			}
 		};
 	}
 
 	onClose() {
 		const { contentEl } = this;
 		contentEl.empty();
+		// 清理添加的样式
+		const styleEl = document.head.querySelector('style:last-child');
+		if (styleEl) {
+			styleEl.remove();
+		}
 	}
 }

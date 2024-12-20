@@ -1,7 +1,7 @@
 {
-	"name": "obsidian-sample-plugin",
+	"name": "obsidian-publish-to-discourse",
 	"version": "1.0.0",
-	"description": "This is a sample plugin for Obsidian (https://obsidian.md)",
+	"description": "发布笔记到 Discourse 论坛。",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",

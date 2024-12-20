@@ -1,11 +1,11 @@
 {
-	"id": "discourse-sync",
-	"name": "Sync to Discourse",
-	"version": "1.0.4",
+	"id": "publish-to-discourse",
+	"name": "发布到 Discourse",
+	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
-	"description": "Sync notes to a Discourse server.",
-	"author": "Tim Finley",
-	"authorUrl": "https://finley-group.com",
-	"fundingUrl": "https://finley-group.com",
+	"description": "发布笔记到 Discourse 论坛。",
+	"author": "WoodChen",
+	"authorUrl": "https://woodchen.ink",
+	"fundingUrl": "https://woodchen.ink",
 	"isDesktopOnly": true
 }
