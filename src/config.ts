@@ -41,7 +41,7 @@ export class DiscourseSyncSettingsTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName("API 密钥")
-			.setDesc("用户创建的 API 密钥")
+			.setDesc("在'/admin/api/keys'中创建的 API 密钥")
 			.addText((text) =>
 				text
 					.setPlaceholder("api_key")

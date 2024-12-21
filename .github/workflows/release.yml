@@ -27,8 +27,18 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           tag="${GITHUB_REF#refs/tags/}"
+          
+          files=()
+          for file in main.js manifest.json; do
+            if [ -f "$file" ]; then
+              files+=("$file")
+            else
+              echo "Warning: $file not found"
+              exit 1
+            fi
+          done
 
           gh release create "$tag" \
             --title="$tag" \
             --draft \
-            main.js manifest.json
+            "${files[@]}"

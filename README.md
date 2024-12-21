@@ -1,4 +1,4 @@
-# Discourse Sync Plugin
+# Obsidian Publish to Discourse
 
 ## How to use
 
