@@ -6,3 +6,59 @@ available in the app when your plugin is enabled.
 If your plugin does not need CSS, delete this file.
 
 */
+
+.discourse-sync-modal {
+	padding: 20px;
+}
+
+.discourse-sync-modal h1 {
+	margin-bottom: 20px;
+	color: var(--text-normal);
+}
+
+.discourse-sync-modal .select-container {
+	margin-bottom: 24px;
+}
+
+.discourse-sync-modal select {
+	width: 100%;
+	padding: 8px 12px;
+	height: 42px;
+	line-height: 1.5;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 4px;
+	background-color: var(--background-primary);
+	color: var(--text-normal);
+}
+
+.discourse-sync-modal .submit-button {
+	width: 100%;
+	padding: 10px;
+	background-color: var(--interactive-accent);
+	color: var(--text-on-accent);
+	border: none;
+	border-radius: 4px;
+	cursor: pointer;
+	font-weight: 500;
+}
+
+.discourse-sync-modal .submit-button:hover {
+	background-color: var(--interactive-accent-hover);
+}
+
+.discourse-sync-modal .notice {
+	margin-top: 16px;
+	padding: 10px;
+	border-radius: 4px;
+	text-align: center;
+}
+
+.discourse-sync-modal .notice.success {
+	background-color: var(--background-modifier-success);
+	color: var(--text-success);
+}
+
+.discourse-sync-modal .notice.error {
+	background-color: var(--background-modifier-error);
+	color: var(--text-error);
+}

@@ -47,13 +47,13 @@ export default class DiscourseSyncPlugin extends Plugin {
 		for (const ref of imageReferences) {
 			const filePath = this.app.metadataCache.getFirstLinkpathDest(ref, this.activeFile.name)?.path;
 			if (filePath) {
-				const file = this.app.vault.getAbstractFileByPath(filePath) as TFile;
-				if (file) {
+				const abstractFile = this.app.vault.getAbstractFileByPath(filePath);
+				if (abstractFile instanceof TFile) {
 					try {
-						const imgfile = await this.app.vault.readBinary(file);
+						const imgfile = await this.app.vault.readBinary(abstractFile);
 						const boundary = genBoundary();
 						const sBoundary = '--' + boundary + '\r\n';
-						const imgForm = `${sBoundary}Content-Disposition: form-data; name="file"; filename="${file.name}"\r\nContent-Type: image/${file.extension}\r\n\r\n`;
+						const imgForm = `${sBoundary}Content-Disposition: form-data; name="file"; filename="${abstractFile.name}"\r\nContent-Type: image/${abstractFile.extension}\r\n\r\n`;
 
 
 						let body = '';
@@ -277,59 +277,7 @@ export class SelectCategoryModal extends Modal {
 
 	onOpen() {
 		const { contentEl } = this;
-		
-		// 添加样式
 		contentEl.addClass('discourse-sync-modal');
-		const styleEl = document.head.createEl('style');
-		styleEl.textContent = `
-			.discourse-sync-modal {
-				padding: 20px;
-			}
-			.discourse-sync-modal h1 {
-				margin-bottom: 20px;
-				color: var(--text-normal);
-			}
-			.discourse-sync-modal .select-container {
-				margin-bottom: 24px;
-			}
-			.discourse-sync-modal select {
-				width: 100%;
-				padding: 8px 12px;
-				height: 42px;
-				line-height: 1.5;
-				border: 1px solid var(--background-modifier-border);
-				border-radius: 4px;
-				background-color: var(--background-primary);
-				color: var(--text-normal);
-			}
-			.discourse-sync-modal .submit-button {
-				width: 100%;
-				padding: 10px;
-				background-color: var(--interactive-accent);
-				color: var(--text-on-accent);
-				border: none;
-				border-radius: 4px;
-				cursor: pointer;
-				font-weight: 500;
-			}
-			.discourse-sync-modal .submit-button:hover {
-				background-color: var(--interactive-accent-hover);
-			}
-			.discourse-sync-modal .notice {
-				margin-top: 16px;
-				padding: 10px;
-				border-radius: 4px;
-				text-align: center;
-			}
-			.discourse-sync-modal .notice.success {
-				background-color: var(--background-modifier-success);
-				color: var(--text-success);
-			}
-			.discourse-sync-modal .notice.error {
-				background-color: var(--background-modifier-error);
-				color: var(--text-error);
-			}
-		`;
 
 		contentEl.createEl("h1", { text: '选择发布分类' });
 		
@@ -353,7 +301,6 @@ export class SelectCategoryModal extends Modal {
 
 		// 创建提示信息容器
 		const noticeContainer = contentEl.createEl('div');
-		
 		
 		submitButton.onclick = async () => {
 			const selectedCategoryId = selectEl.value;
@@ -391,10 +338,5 @@ export class SelectCategoryModal extends Modal {
 	onClose() {
 		const { contentEl } = this;
 		contentEl.empty();
-		// 清理添加的样式
-		const styleEl = document.head.querySelector('style:last-child');
-		if (styleEl) {
-			styleEl.remove();
-		}
 	}
 }
