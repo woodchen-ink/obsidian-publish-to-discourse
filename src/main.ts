@@ -38,7 +38,6 @@ export default class DiscourseSyncPlugin extends Plugin {
 		while ((match = regex.exec(content)) !== null) {
 			matches.push(match[1]);
 		}
-		console.log("matches:", matches);
 		return matches;
 	}
 
@@ -88,23 +87,18 @@ export default class DiscourseSyncPlugin extends Plugin {
 
 						if (response.status == 200) {
 							const jsonResponse = response.json;
-							console.log(`Upload Image jsonResponse: ${JSON.stringify(jsonResponse)}`);
 							imageUrls.push(jsonResponse.short_url);
 						} else {
 							new NotifyUser(this.app, `Error uploading image: ${response.status}`).open();
-							console.error(`Error uploading image: ${JSON.stringify(response.json)}`);
 						}
 					} catch (error) {
 						new NotifyUser(this.app, `Exception while uploading image: ${error}`).open();
-						console.error("Exception while uploading image:", error);
 					}
 				} else {
 					new NotifyUser(this.app, `File not found in vault: ${ref}`).open();
-					console.error(`File not found in vault: ${ref}`);
 				}
 			} else {
 				new NotifyUser(this.app, `Unable to resolve file path for: ${ref}`).open();
-				console.error(`Unable to resolve file path for: ${ref}`);
 			}
 		}
 		return imageUrls;
@@ -136,7 +130,6 @@ export default class DiscourseSyncPlugin extends Plugin {
 			raw: content,
 			category: this.settings.category
 		});
-		console.log("POST Body:", body);
 
 		const response = await requestUrl({
 			url: url,
@@ -147,12 +140,8 @@ export default class DiscourseSyncPlugin extends Plugin {
 		});
 
 		if (response.status !== 200) {
-			console.error("Error publishing to Discourse:", response.status);
-			console.error("Response body:", response.text);
 			if (response.status == 422) {
 				new NotifyUser(this.app, `There's an error with this post, could be a duplicate or the title is too short: ${response.status}`).open();
-
-				console.error("there's an error with this post, try making a longer title");
 			}
 			return { message: "Error publishing to Discourse" };
 		}
@@ -190,7 +179,6 @@ export default class DiscourseSyncPlugin extends Plugin {
 			});
 			return allCategories;
 		} catch (error) {
-			console.error("Error fetching categories:", error);
 			return [];
 		}
 	}
@@ -213,8 +201,6 @@ export default class DiscourseSyncPlugin extends Plugin {
 		const categories = await this.fetchCategories();
 		if (categories.length > 0) {
 			new SelectCategoryModal(this.app, this, categories).open();
-		} else {
-			console.error("No categories");
 		}
 	}
 
@@ -312,8 +298,6 @@ export class SelectCategoryModal extends Modal {
 			submitButton.textContent = '发布中...';
 			
 			const reply = await this.plugin.postTopic();
-			console.log(`postTopic message: ${reply.message}`);
-			console.log(`ID: ${selectedCategoryId}`);
 
 			// 显示提示信息
 			noticeContainer.empty();

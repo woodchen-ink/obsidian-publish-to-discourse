@@ -24,7 +24,6 @@ export class DiscourseSyncSettingsTab extends PluginSettingTab {
 	display(): void {
 		const { containerEl } = this;
 		containerEl.empty();
-		containerEl.createEl("h2", { text: "发布到 Discourse" });
 
 		new Setting(containerEl)
 			.setName("论坛地址")
