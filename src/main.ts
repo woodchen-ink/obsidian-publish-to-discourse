@@ -104,7 +104,7 @@ export default class DiscourseSyncPlugin extends Plugin {
 		return imageUrls;
 	}
 
-	async postTopic(): Promise<{ message: string }> {
+	async postTopic(): Promise<{ message: string; error?: string }> {
 		const url = `${this.settings.baseUrl}/posts.json`;
 		const headers = {
 			"Content-Type": "application/json",
@@ -131,21 +131,51 @@ export default class DiscourseSyncPlugin extends Plugin {
 			category: this.settings.category
 		});
 
-		const response = await requestUrl({
-			url: url,
-			method: "POST",
-			contentType: "application/json",
-			body,
-			headers,
-		});
+		try {
+			const response = await requestUrl({
+				url: url,
+				method: "POST",
+				contentType: "application/json",
+				body,
+				headers,
+				throw: false // 设置为 false 以获取错误响应
+			});
 
-		if (response.status !== 200) {
-			if (response.status == 422) {
-				new NotifyUser(this.app, `There's an error with this post, could be a duplicate or the title is too short: ${response.status}`).open();
+			if (response.status === 200) {
+				return { message: "Success" };
+			} else {
+				// 尝试从响应中获取错误信息
+				try {
+					const errorResponse = response.json;
+					// Discourse 通常会在 errors 数组中返回错误信息
+					if (errorResponse.errors && errorResponse.errors.length > 0) {
+						return { 
+							message: "Error",
+							error: errorResponse.errors.join('\n')
+						};
+					}
+					// 有些错误可能在 error 字段中
+					if (errorResponse.error) {
+						return {
+							message: "Error",
+							error: errorResponse.error
+						};
+					}
+				} catch (parseError) {
+					// 如果无法解析错误响应
+					return {
+						message: "Error",
+						error: `发布失败 (${response.status})`
+					};
+				}
 			}
-			return { message: "Error publishing to Discourse" };
+		} catch (error) {
+			return { 
+				message: "Error",
+				error: `发布失败: ${error.message || '未知错误'}`
+			};
 		}
-		return { message: "Success" };
+		return { message: "Error", error: "发布失败，请重试" };
 	}
 
 	private async fetchCategories() {
@@ -258,20 +288,21 @@ export class SelectCategoryModal extends Modal {
 	constructor(app: App, plugin: DiscourseSyncPlugin, categories: {id: number; name: string }[]) {
 		super(app);
 		this.plugin = plugin;
-		this.categories = categories
+		this.categories = categories;
 	}
 
 	onOpen() {
+		// 添加模态框基础样式
+		this.modalEl.addClass('mod-discourse-sync');
 		const { contentEl } = this;
+		contentEl.empty();
 		contentEl.addClass('discourse-sync-modal');
 
 		contentEl.createEl("h1", { text: '选择发布分类' });
 		
 		// 创建选择器容器
 		const selectContainer = contentEl.createEl('div', { cls: 'select-container' });
-		const selectLabel = selectContainer.createEl('label', { text: '分类' });
-		selectLabel.style.display = 'block';
-		selectLabel.style.marginBottom = '8px';
+		selectContainer.createEl('label', { text: '分类' });
 		
 		const selectEl = selectContainer.createEl('select');
 		
@@ -297,22 +328,70 @@ export class SelectCategoryModal extends Modal {
 			submitButton.disabled = true;
 			submitButton.textContent = '发布中...';
 			
-			const reply = await this.plugin.postTopic();
-
-			// 显示提示信息
-			noticeContainer.empty();
-			noticeContainer.createEl('div', { 
-				cls: `notice ${reply.message === 'Success' ? 'success' : 'error'}`,
-				text: reply.message === 'Success' ? '发布成功！' : '发布失败，请重试。'
-			});
-
-			if (reply.message === 'Success') {
-				// 成功后延迟关闭
-				setTimeout(() => {
-					this.close();
-				}, 1500);
-			} else {
-				// 失败时重置按钮状态
+			try {
+				const reply = await this.plugin.postTopic();
+				
+				// 显示提示信息
+				noticeContainer.empty();
+				if (reply.message === 'Success') {
+					noticeContainer.createEl('div', { 
+						cls: 'notice success',
+						text: '✓ 发布成功！'
+					});
+					// 成功后延迟关闭
+					setTimeout(() => {
+						this.close();
+					}, 1500);
+				} else {
+					const errorContainer = noticeContainer.createEl('div', { cls: 'notice error' });
+					errorContainer.createEl('div', { 
+						cls: 'error-title',
+						text: '发布失败'
+					});
+					
+					// 显示 Discourse 返回的具体错误信息
+					errorContainer.createEl('div', { 
+						cls: 'error-message',
+						text: reply.error || '发布失败，请重试'
+					});
+					
+					// 添加重试按钮
+					const retryButton = errorContainer.createEl('button', {
+						cls: 'retry-button',
+						text: '重试'
+					});
+					retryButton.onclick = () => {
+						noticeContainer.empty();
+						submitButton.disabled = false;
+						submitButton.textContent = '发布';
+					};
+				}
+			} catch (error) {
+				noticeContainer.empty();
+				const errorContainer = noticeContainer.createEl('div', { cls: 'notice error' });
+				errorContainer.createEl('div', { 
+					cls: 'error-title',
+					text: '发布出错'
+				});
+				errorContainer.createEl('div', { 
+					cls: 'error-message',
+					text: error.message || '未知错误'
+				});
+				
+				// 添加重试按钮
+				const retryButton = errorContainer.createEl('button', {
+					cls: 'retry-button',
+					text: '重试'
+				});
+				retryButton.onclick = () => {
+					noticeContainer.empty();
+					submitButton.disabled = false;
+					submitButton.textContent = '发布';
+				};
+			}
+			
+			// 如果发生错误，重置按钮状态
+			if (submitButton.disabled) {
 				submitButton.disabled = false;
 				submitButton.textContent = '发布';
 			}

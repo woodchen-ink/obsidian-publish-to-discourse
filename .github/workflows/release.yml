@@ -32,7 +32,7 @@ jobs:
           tag="${GITHUB_REF#refs/tags/}"
           
           files=()
-          for file in main.js manifest.json style.css; do
+          for file in main.js manifest.json styles.css; do
             if [ -f "$file" ]; then
               files+=("$file")
             else

@@ -1,0 +1,143 @@
+/*
+
+This CSS file will be included with your plugin, and
+available in the app when your plugin is enabled.
+
+If your plugin does not need CSS, delete this file.
+
+*/
+
+/* 基础模态框样式覆盖 */
+.modal.mod-discourse-sync {
+  max-width: 500px;
+  max-height: 80vh;
+  background-color: var(--background-primary);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* 内容区域样式 */
+.discourse-sync-modal {
+  padding: 24px;
+  width: 100%;
+}
+
+.discourse-sync-modal h1 {
+  margin: 0 0 24px 0;
+  font-size: 1.5em;
+  font-weight: 600;
+  color: var(--text-normal);
+}
+
+.discourse-sync-modal .select-container {
+  margin-bottom: 24px;
+}
+
+.discourse-sync-modal .select-container label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: var(--text-normal);
+}
+
+.discourse-sync-modal select {
+  width: 100%;
+  padding: 8px 12px;
+  height: 42px;
+  line-height: 1.5;
+  border: 2px solid var(--background-modifier-border);
+  border-radius: 4px;
+  background-color: var(--background-primary);
+  color: var(--text-normal);
+  font-size: 14px;
+}
+
+.discourse-sync-modal select:focus {
+  border-color: var(--interactive-accent);
+  outline: none;
+}
+
+.discourse-sync-modal .submit-button {
+  width: 100%;
+  padding: 10px 16px;
+  background-color: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 14px;
+  transition: background-color 0.2s ease;
+}
+
+.discourse-sync-modal .submit-button:hover {
+  background-color: var(--interactive-accent-hover);
+}
+
+.discourse-sync-modal .submit-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* 提示信息样式 */
+.discourse-sync-modal .notice {
+  margin-top: 16px;
+  padding: 16px;
+  border-radius: 8px;
+  text-align: left;
+  font-size: 14px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.discourse-sync-modal .notice.success {
+  background-color: var(--background-modifier-success-hover);
+  color: var(--text-success);
+  text-align: center;
+  font-weight: 500;
+}
+
+.discourse-sync-modal .notice.error {
+  background: rgb(255, 235, 235);
+  border: 1px solid rgba(255, 82, 82, 0.2);
+  color: rgb(255, 82, 82);
+}
+
+.discourse-sync-modal .error-title {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: rgb(255, 82, 82);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.discourse-sync-modal .error-title::before {
+  content: "⚠️";
+  font-size: 16px;
+}
+
+.discourse-sync-modal .error-message {
+  color: rgb(255, 82, 82);
+  opacity: 0.8;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.discourse-sync-modal .retry-button {
+  margin-top: 12px;
+  padding: 6px 16px;
+  background-color: transparent;
+  color: rgb(255, 82, 82);
+  border: 1px solid rgb(255, 82, 82);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.discourse-sync-modal .retry-button:hover {
+  background-color: rgb(255, 82, 82);
+  color: white;
+}
