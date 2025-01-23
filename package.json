@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-publish-to-discourse",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"description": "Post notes to the Discourse forum.",
 	"main": "main.js",
 	"scripts": {
@@ -8,7 +8,11 @@
 		"build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
 		"version": "node version-bump.mjs && git add manifest.json versions.json"
 	},
-	"keywords": ["discourse", "publish", "post"],
+	"keywords": [
+		"discourse",
+		"publish",
+		"post"
+	],
 	"author": "woodchen",
 	"license": "MIT",
 	"devDependencies": {
