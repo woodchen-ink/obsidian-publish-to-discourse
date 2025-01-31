@@ -1,13 +1,13 @@
 # Publish to Discourse
 
-## 配置key
+## Configure key / 配置key
 
 下载插件, 在设置页面添加"论坛地址", "API密钥(需要管理员创建)", "用户名".
 ![image](https://github.com/user-attachments/assets/6c75ebb6-d028-4055-9616-2fb2931932ff)
 
 
 
-## 发布帖子
+## Post / 发布帖子
 
 在文档页面的右上角, 展开菜单, 选择"发布到discourse", 选择类别即可.
 
@@ -21,7 +21,7 @@
 在发布帖子成功后, 会在笔记属性里添加一个"discourse_post_id"属性, 用于更新帖子.
 
 
-## 更新帖子
+## Update post / 更新帖子
 
 在文档页面的右上角, 展开菜单, 选择"发布到discourse", 点击更新即可.
 

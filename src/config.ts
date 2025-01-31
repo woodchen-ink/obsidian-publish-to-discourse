@@ -28,8 +28,8 @@ export class DiscourseSyncSettingsTab extends PluginSettingTab {
 		containerEl.empty();
 
 		new Setting(containerEl)
-			.setName("论坛地址")
-			.setDesc("Discourse 论坛的网址")
+			.setName("Forum / 论坛地址")
+			.setDesc("Discourse URL / 论坛的网址 URL")
 			.addText((text) =>
 				text
 					.setPlaceholder("https://forum.example.com")
@@ -41,7 +41,7 @@ export class DiscourseSyncSettingsTab extends PluginSettingTab {
 		);
 
 		new Setting(containerEl)
-			.setName("API 密钥")
+			.setName("API Keys / API 密钥")
 			.setDesc("在'/admin/api/keys'中创建的 API 密钥")
 			.addText((text) =>
 				text
@@ -54,8 +54,8 @@ export class DiscourseSyncSettingsTab extends PluginSettingTab {
 		);
 
 		new Setting(containerEl)
-			.setName("用户名")
-			.setDesc("Discourse 用户名")
+			.setName("Username / 用户名")
+			.setDesc("Discourse Username / 用户名")
 			.addText((text) =>
 				text
 					.setPlaceholder("username")

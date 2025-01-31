@@ -20,7 +20,7 @@ export default class DiscourseSyncPlugin extends Plugin {
 
 		this.addCommand({
 			id: "category-modal",
-			name: "发布到 Discourse",
+			name: "Releasee / 发布到 Discourse",
 			callback: () => {
 				this.openCategoryModal();
 			},
@@ -353,7 +353,7 @@ export default class DiscourseSyncPlugin extends Plugin {
 
 	registerDirMenu(menu: Menu, file: TFile) {
 		const syncDiscourse = (item: MenuItem) => {
-			item.setTitle("发布到 Discourse");
+			item.setTitle("Publish to / 发布到 Discourse");
 			item.onClick(async () => {
 				const content = await this.app.vault.read(file);
 				const fm = this.getFrontMatter(content);
@@ -448,7 +448,7 @@ export class SelectCategoryModal extends Modal {
 		contentEl.addClass('discourse-sync-modal');
 
 		const isUpdate = this.plugin.activeFile.postId !== undefined;
-		contentEl.createEl("h1", { text: isUpdate ? '更新帖子' : '发布到 Discourse' });
+		contentEl.createEl("h1", { text: isUpdate ? 'Update post / 更新帖子' : 'Publish / 发布到 Discourse' });
 		
 		// 创建表单区域容器
 		const formArea = contentEl.createEl('div', { cls: 'form-area' });
@@ -457,7 +457,7 @@ export class SelectCategoryModal extends Modal {
 		const selectContainer = formArea.createEl('div', { cls: 'select-container' });
 		if (!isUpdate) {
 			// 只在新建帖子时显示分类选择
-			selectContainer.createEl('label', { text: '分类' });
+			selectContainer.createEl('label', { text: 'Category / 分类' });
 			const selectEl = selectContainer.createEl('select');
 			this.categories.forEach(category => {
 				const option = selectEl.createEl('option', { text: category.name });
@@ -467,7 +467,7 @@ export class SelectCategoryModal extends Modal {
 
 		// 创建标签选择容器
 		const tagContainer = formArea.createEl('div', { cls: 'tag-container' });
-		tagContainer.createEl('label', { text: '标签' });
+		tagContainer.createEl('label', { text: 'Tags / 标签' });
 		
 		// 创建标签选择区域
 		const tagSelectArea = tagContainer.createEl('div', { cls: 'tag-select-area' });
@@ -501,7 +501,7 @@ export class SelectCategoryModal extends Modal {
 		// 创建标签输入和建议
 		const tagInput = tagInputContainer.createEl('input', {
 			type: 'text',
-			placeholder: this.canCreateTags ? '输入标签名称（回车添加）' : '输入标签名称（回车添加）'
+			placeholder: this.canCreateTags ? 'Enter the Tag (add) / 输入标签名称（回车添加）' : '输入标签名称（回车添加）'
 		});
 
 		// 创建标签建议容器
@@ -566,7 +566,7 @@ export class SelectCategoryModal extends Modal {
 						// 显示权限提示
 						const notice = contentEl.createEl('div', {
 							cls: 'tag-notice',
-							text: '权限不足，只能使用已有的标签'
+							text: 'Insufficient permissions, you can only use existing tags / 权限不足，只能使用已有的标签'
 						});
 						setTimeout(() => {
 							notice.remove();
@@ -607,7 +607,7 @@ export class SelectCategoryModal extends Modal {
 		// 创建按钮区域
 		const buttonArea = contentEl.createEl('div', { cls: 'button-area' });
 		const submitButton = buttonArea.createEl('button', { 
-			text: isUpdate ? '更新' : '发布',
+			text: isUpdate ? 'Update / 更新' : 'Publish / 发布',
 			cls: 'submit-button'
 		});
 
@@ -631,7 +631,7 @@ export class SelectCategoryModal extends Modal {
 			
 			// 禁用提交按钮，显示加载状态
 			submitButton.disabled = true;
-			submitButton.textContent = isUpdate ? '更新中...' : '发布中...';
+			submitButton.textContent = isUpdate ? 'Update / 更新中...' : 'Published / 发布中...';
 			
 			try {
 				const reply = await this.plugin.postTopic();
@@ -641,7 +641,7 @@ export class SelectCategoryModal extends Modal {
 				if (reply.message === 'Success') {
 					noticeContainer.createEl('div', { 
 						cls: 'notice success',
-						text: isUpdate ? '✓ 更新成功！' : '✓ 发布成功！'
+						text: isUpdate ? '✓ Successful update 更新成功！' : '✓ Successful published / 发布成功！'
 					});
 					// 成功后延迟关闭
 					setTimeout(() => {
@@ -663,12 +663,12 @@ export class SelectCategoryModal extends Modal {
 					// 添加重试按钮
 					const retryButton = errorContainer.createEl('button', {
 						cls: 'retry-button',
-						text: '重试'
+						text: 'Repeat / 重试'
 					});
 					retryButton.onclick = () => {
 						noticeContainer.empty();
 						submitButton.disabled = false;
-						submitButton.textContent = isUpdate ? '更新' : '发布';
+						submitButton.textContent = isUpdate ? 'Renew / 更新' : 'Publish / 发布';
 					};
 				}
 			} catch (error) {
@@ -676,29 +676,29 @@ export class SelectCategoryModal extends Modal {
 				const errorContainer = noticeContainer.createEl('div', { cls: 'notice error' });
 				errorContainer.createEl('div', { 
 					cls: 'error-title',
-					text: isUpdate ? '更新出错' : '发布出错'
+					text: isUpdate ? 'Update / 更新出错' : 'Publish error / 发布出错'
 				});
 				errorContainer.createEl('div', { 
 					cls: 'error-message',
-					text: error.message || '未知错误'
+					text: error.message || 'Unknown error / 未知错误'
 				});
 				
 				// 添加重试按钮
 				const retryButton = errorContainer.createEl('button', {
 					cls: 'retry-button',
-					text: '重试'
+					text: 'Repeat / 重试'
 				});
 				retryButton.onclick = () => {
 					noticeContainer.empty();
 					submitButton.disabled = false;
-					submitButton.textContent = isUpdate ? '更新' : '发布';
+					submitButton.textContent = isUpdate ? 'Update / 更新' : 'Publish / 发布';
 				};
 			}
 			
 			// 如果发生错误，重置按钮状态
 			if (submitButton.disabled) {
 				submitButton.disabled = false;
-				submitButton.textContent = isUpdate ? '更新' : '发布';
+				submitButton.textContent = isUpdate ? 'Update / 更新' : 'Publish / 发布';
 			}
 		};
 	}
