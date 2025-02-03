@@ -1,15 +1,26 @@
-import { App, Menu, MenuItem, Plugin, Modal, requestUrl, TFile } from 'obsidian';
+import { App, Menu, MenuItem, Plugin, Modal, requestUrl, TFile, moment } from 'obsidian';
 import { DEFAULT_SETTINGS, DiscourseSyncSettings, DiscourseSyncSettingsTab } from './config';
 import * as yaml from 'yaml';
+import { t, setLocale } from './i18n';
 
 export default class DiscourseSyncPlugin extends Plugin {
 	settings: DiscourseSyncSettings;
 	activeFile: { 
 		name: string; 
 		content: string;
-		postId?: number; // 添加帖子ID字段
+		postId?: number; // Post ID field
 	};
 	async onload() {
+		// Set locale based on Obsidian's language setting
+		setLocale(moment.locale());
+
+		// Update locale when Obsidian's language changes
+		this.registerEvent(
+			this.app.workspace.on('window-open', () => {
+				setLocale(moment.locale());
+			})
+		);
+
 		await this.loadSettings();
 		this.addSettingTab(new DiscourseSyncSettingsTab(this.app, this));
 		this.registerEvent(
@@ -20,7 +31,7 @@ export default class DiscourseSyncPlugin extends Plugin {
 
 		this.addCommand({
 			id: "category-modal",
-			name: "发布到 Discourse",
+			name: t('PUBLISH_TO_DISCOURSE'),
 			callback: () => {
 				this.openCategoryModal();
 			},
@@ -118,11 +129,11 @@ export default class DiscourseSyncPlugin extends Plugin {
 		}
 		let content = this.activeFile.content;
 
-		// 检查是否包含帖子ID的frontmatter
+		// Check if frontmatter contains post ID
 		const frontMatter = this.getFrontMatter(content);
 		const postId = frontMatter?.discourse_post_id;
 		
-		// 过滤掉笔记属性部分
+		// Filter out note properties section
 		content = content.replace(/^---[\s\S]*?---\n/, '');
 
 		const imageReferences = this.extractImageReferences(content);
@@ -162,20 +173,20 @@ export default class DiscourseSyncPlugin extends Plugin {
 			if (response.status === 200) {
 				if (!isUpdate) {
 					try {
-						// 获取新帖子的ID
+						// Get new post ID
 						const responseData = response.json;
 						if (responseData && responseData.id) {
 							await this.updateFrontMatter(responseData.id);
 						} else {
 							return {
 								message: "Error",
-								error: "发布成功但无法获取帖子ID"
+								error: t('POST_ID_ERROR')
 							};
 						}
 					} catch (error) {
 						return {
 							message: "Error",
-							error: "发布成功但无法保存帖子ID"
+							error: t('SAVE_POST_ID_ERROR')
 						};
 					}
 				}
@@ -198,20 +209,20 @@ export default class DiscourseSyncPlugin extends Plugin {
 				} catch (parseError) {
 					return {
 						message: "Error",
-						error: `${isUpdate ? '更新' : '发布'}失败 (${response.status})`
+						error: `${isUpdate ? t('UPDATE_FAILED') : t('PUBLISH_FAILED')} (${response.status})`
 					};
 				}
 			}
 		} catch (error) {
 			return { 
 				message: "Error",
-				error: `${isUpdate ? '更新' : '发布'}失败: ${error.message || '未知错误'}`
+				error: `${isUpdate ? t('UPDATE_FAILED') : t('PUBLISH_FAILED')}: ${error.message || t('UNKNOWN_ERROR')}`
 			};
 		}
-		return { message: "Error", error: `${isUpdate ? '更新' : '发布'}失败，请重试` };
+		return { message: "Error", error: `${isUpdate ? t('UPDATE_FAILED') : t('PUBLISH_FAILED')}, ${t('TRY_AGAIN')}` };
 	}
 
-	// 获取frontmatter数据
+	// Get frontmatter data
 	private getFrontMatter(content: string): any {
 		const fmMatch = content.match(/^---\n([\s\S]*?)\n---/);
 		if (fmMatch) {
@@ -224,10 +235,10 @@ export default class DiscourseSyncPlugin extends Plugin {
 		return null;
 	}
 
-	// 更新frontmatter，添加帖子ID
+	// Update frontmatter, add post ID
 	private async updateFrontMatter(postId: number) {
 		try {
-			// 获取当前活动文件
+			// Get current active file
 			const activeFile = this.app.workspace.getActiveFile();
 			if (!activeFile) {
 				return;
@@ -238,11 +249,11 @@ export default class DiscourseSyncPlugin extends Plugin {
 			
 			let newContent: string;
 			if (fm) {
-				// 更新现有的frontmatter
+				// Update existing frontmatter
 				const updatedFm = { ...fm, discourse_post_id: postId };
 				newContent = content.replace(/^---\n[\s\S]*?\n---\n/, `---\n${yaml.stringify(updatedFm)}---\n`);
 			} else {
-				// 添加新的frontmatter
+				// Add new frontmatter
 				const newFm = { discourse_post_id: postId };
 				newContent = `---\n${yaml.stringify(newFm)}---\n${content}`;
 			}
@@ -251,7 +262,7 @@ export default class DiscourseSyncPlugin extends Plugin {
 		} catch (error) {
 			return {
 				message: "Error",
-				error: "更新失败"
+				error: t('UPDATE_FAILED')
 			};
 		}
 	}
@@ -309,9 +320,9 @@ export default class DiscourseSyncPlugin extends Plugin {
 
 			if (response.status === 200) {
 				const data = response.json;
-				// 获取用户权限信息
+				// Get user permissions
 				const canCreateTags = await this.checkCanCreateTags();
-				// Discourse 返回的 tags 列表在 tags 数组中
+				// Tags list returned by Discourse is in the tags array
 				return data.tags.map((tag: any) => ({
 					name: tag.name,
 					canCreate: canCreateTags
@@ -323,7 +334,7 @@ export default class DiscourseSyncPlugin extends Plugin {
 		}
 	}
 
-	// 检查用户是否有创建标签的权限
+	// Check if user has permission to create tags
 	private async checkCanCreateTags(): Promise<boolean> {
 		try {
 			const url = `${this.settings.baseUrl}/u/${this.settings.disUser}.json`;
@@ -342,7 +353,7 @@ export default class DiscourseSyncPlugin extends Plugin {
 
 			if (response.status === 200) {
 				const data = response.json;
-				// 检查用户的 trust_level
+				// Check user's trust_level
 				return data.user.trust_level >= 3;
 			}
 			return false;
@@ -353,7 +364,7 @@ export default class DiscourseSyncPlugin extends Plugin {
 
 	registerDirMenu(menu: Menu, file: TFile) {
 		const syncDiscourse = (item: MenuItem) => {
-			item.setTitle("发布到 Discourse");
+			item.setTitle(t('PUBLISH_TO_DISCOURSE'));
 			item.onClick(async () => {
 				const content = await this.app.vault.read(file);
 				const fm = this.getFrontMatter(content);
@@ -441,23 +452,23 @@ export class SelectCategoryModal extends Modal {
 	}
 
 	onOpen() {
-		// 添加模态框基础样式
+		// Add modal base style
 		this.modalEl.addClass('mod-discourse-sync');
 		const { contentEl } = this;
 		contentEl.empty();
 		contentEl.addClass('discourse-sync-modal');
 
 		const isUpdate = this.plugin.activeFile.postId !== undefined;
-		contentEl.createEl("h1", { text: isUpdate ? '更新帖子' : '发布到 Discourse' });
+		contentEl.createEl("h1", { text: isUpdate ? t('UPDATE_POST') : t('PUBLISH_TO_DISCOURSE') });
 		
-		// 创建表单区域容器
+		// Create form area container
 		const formArea = contentEl.createEl('div', { cls: 'form-area' });
 		
-		// 创建选择器容器
+		// Create selector container
 		const selectContainer = formArea.createEl('div', { cls: 'select-container' });
 		if (!isUpdate) {
-			// 只在新建帖子时显示分类选择
-			selectContainer.createEl('label', { text: '分类' });
+			// Only show category selector when creating a new post
+			selectContainer.createEl('label', { text: t('CATEGORY') });
 			const selectEl = selectContainer.createEl('select');
 			this.categories.forEach(category => {
 				const option = selectEl.createEl('option', { text: category.name });
@@ -465,18 +476,18 @@ export class SelectCategoryModal extends Modal {
 			});
 		}
 
-		// 创建标签选择容器
+		// Create tag selector container
 		const tagContainer = formArea.createEl('div', { cls: 'tag-container' });
-		tagContainer.createEl('label', { text: '标签' });
+		tagContainer.createEl('label', { text: t('TAGS') });
 		
-		// 创建标签选择区域
+		// Create tag selector area
 		const tagSelectArea = tagContainer.createEl('div', { cls: 'tag-select-area' });
 		
-		// 已选标签显示区域
+		// Selected tags display area
 		const selectedTagsContainer = tagSelectArea.createEl('div', { cls: 'selected-tags' });
 		const selectedTags = new Set<string>();
 
-		// 更新已选标签显示
+		// Update selected tags display
 		const updateSelectedTags = () => {
 			selectedTagsContainer.empty();
 			selectedTags.forEach(tag => {
@@ -495,19 +506,19 @@ export class SelectCategoryModal extends Modal {
 			});
 		};
 
-		// 创建标签输入容器
+		// Create tag input container
 		const tagInputContainer = tagSelectArea.createEl('div', { cls: 'tag-input-container' });
 		
-		// 创建标签输入和建议
+		// Create tag input and suggestions
 		const tagInput = tagInputContainer.createEl('input', {
 			type: 'text',
-			placeholder: this.canCreateTags ? '输入标签名称（回车添加）' : '输入标签名称（回车添加）'
+			placeholder: this.canCreateTags ? t('ENTER_TAG_WITH_CREATE') : t('ENTER_TAG')
 		});
 
-		// 创建标签建议容器
+		// Create tag suggestions container
 		const tagSuggestions = tagInputContainer.createEl('div', { cls: 'tag-suggestions' });
 
-		// 处理输入事件，显示匹配的标签
+		// Handle input event, show matching tags
 		tagInput.oninput = () => {
 			const value = tagInput.value.toLowerCase();
 			tagSuggestions.empty();
@@ -521,14 +532,14 @@ export class SelectCategoryModal extends Modal {
 					.slice(0, 10);
 
 				if (matches.length > 0) {
-					// 获取输入框的位置和宽度
+					// Get input box position and width
 					const inputRect = tagInput.getBoundingClientRect();
 					const modalRect = this.modalEl.getBoundingClientRect();
 					
-					// 确保建议列表不会超出模态框宽度
-					const maxWidth = modalRect.right - inputRect.left - 24; // 24px 是右侧padding
+					// Ensure suggestions list doesn't exceed modal width
+					const maxWidth = modalRect.right - inputRect.left - 24; // 24px is right padding
 					
-					// 设置建议列表的位置和宽度
+					// Set suggestions list position and width
 					tagSuggestions.style.top = `${inputRect.bottom + 4}px`;
 					tagSuggestions.style.left = `${inputRect.left}px`;
 					tagSuggestions.style.width = `${Math.min(inputRect.width, maxWidth)}px`;
@@ -549,7 +560,7 @@ export class SelectCategoryModal extends Modal {
 			}
 		};
 
-		// 处理回车事件
+		// Handle enter event
 		tagInput.onkeydown = (e) => {
 			if (e.key === 'Enter' && tagInput.value) {
 				e.preventDefault();
@@ -563,10 +574,10 @@ export class SelectCategoryModal extends Modal {
 						selectedTags.add(value);
 						updateSelectedTags();
 					} else {
-						// 显示权限提示
+						// Show permission notice
 						const notice = contentEl.createEl('div', {
 							cls: 'tag-notice',
-							text: '权限不足，只能使用已有的标签'
+							text: t('PERMISSION_ERROR')
 						});
 						setTimeout(() => {
 							notice.remove();
@@ -578,15 +589,15 @@ export class SelectCategoryModal extends Modal {
 			}
 		};
 
-		// 处理失焦事件，隐藏建议
+		// Handle blur event, hide suggestions
 		tagInput.onblur = () => {
-			// 延迟隐藏，以便可以点击建议
+			// Delay hide, so suggestions can be clicked
 			setTimeout(() => {
 				tagSuggestions.empty();
 			}, 200);
 		};
 
-		// 处理窗口滚动时更新建议列表位置
+		// Handle window scroll, update suggestions list position
 		const updateSuggestionsPosition = () => {
 			if (tagSuggestions.childNodes.length > 0) {
 				const inputRect = tagInput.getBoundingClientRect();
@@ -596,22 +607,22 @@ export class SelectCategoryModal extends Modal {
 			}
 		};
 
-		// 监听滚动事件
+		// Listen for scroll event
 		this.modalEl.addEventListener('scroll', updateSuggestionsPosition);
 		
-		// 在模态框关闭时移除事件监听
+		// Remove event listeners when modal closes
 		this.modalEl.onclose = () => {
 			this.modalEl.removeEventListener('scroll', updateSuggestionsPosition);
 		};
 
-		// 创建按钮区域
+		// Create button area
 		const buttonArea = contentEl.createEl('div', { cls: 'button-area' });
 		const submitButton = buttonArea.createEl('button', { 
-			text: isUpdate ? '更新' : '发布',
+			text: isUpdate ? t('UPDATE') : t('PUBLISH'),
 			cls: 'submit-button'
 		});
 
-		// 创建提示信息容器
+		// Create notice container
 		const noticeContainer = buttonArea.createEl('div');
 		
 		submitButton.onclick = async () => {
@@ -625,25 +636,25 @@ export class SelectCategoryModal extends Modal {
 				await this.plugin.saveSettings();
 			}
 			
-			// 保存选中的标签
+			// Save selected tags
 			this.plugin.settings.selectedTags = Array.from(selectedTags);
 			await this.plugin.saveSettings();
 			
-			// 禁用提交按钮，显示加载状态
+			// Disable submit button, show loading state
 			submitButton.disabled = true;
-			submitButton.textContent = isUpdate ? '更新中...' : '发布中...';
+			submitButton.textContent = isUpdate ? t('UPDATING') : t('PUBLISHING');
 			
 			try {
 				const reply = await this.plugin.postTopic();
 				
-				// 显示提示信息
+				// Show notice
 				noticeContainer.empty();
 				if (reply.message === 'Success') {
 					noticeContainer.createEl('div', { 
 						cls: 'notice success',
-						text: isUpdate ? '✓ 更新成功！' : '✓ 发布成功！'
+						text: isUpdate ? t('UPDATE_SUCCESS') : t('PUBLISH_SUCCESS')
 					});
-					// 成功后延迟关闭
+					// Close after success
 					setTimeout(() => {
 						this.close();
 					}, 1500);
@@ -651,24 +662,24 @@ export class SelectCategoryModal extends Modal {
 					const errorContainer = noticeContainer.createEl('div', { cls: 'notice error' });
 					errorContainer.createEl('div', { 
 						cls: 'error-title',
-						text: isUpdate ? '更新失败' : '发布失败'
+						text: isUpdate ? t('UPDATE_ERROR') : t('PUBLISH_ERROR')
 					});
 					
-					// 显示 Discourse 返回的具体错误信息
+					// Show Discourse-specific error information
 					errorContainer.createEl('div', { 
 						cls: 'error-message',
-						text: reply.error || (isUpdate ? '更新失败，请重试' : '发布失败，请重试')
+						text: reply.error || (isUpdate ? t('UPDATE_FAILED') + ', ' + t('TRY_AGAIN') : t('PUBLISH_FAILED') + ', ' + t('TRY_AGAIN'))
 					});
 					
-					// 添加重试按钮
+					// Add retry button
 					const retryButton = errorContainer.createEl('button', {
 						cls: 'retry-button',
-						text: '重试'
+						text: t('RETRY')
 					});
 					retryButton.onclick = () => {
 						noticeContainer.empty();
 						submitButton.disabled = false;
-						submitButton.textContent = isUpdate ? '更新' : '发布';
+						submitButton.textContent = isUpdate ? t('UPDATE') : t('PUBLISH');
 					};
 				}
 			} catch (error) {
@@ -676,29 +687,29 @@ export class SelectCategoryModal extends Modal {
 				const errorContainer = noticeContainer.createEl('div', { cls: 'notice error' });
 				errorContainer.createEl('div', { 
 					cls: 'error-title',
-					text: isUpdate ? '更新出错' : '发布出错'
+					text: isUpdate ? t('UPDATE_ERROR') : t('PUBLISH_ERROR')
 				});
 				errorContainer.createEl('div', { 
 					cls: 'error-message',
-					text: error.message || '未知错误'
+					text: error.message || t('UNKNOWN_ERROR')
 				});
 				
-				// 添加重试按钮
+				// Add retry button
 				const retryButton = errorContainer.createEl('button', {
 					cls: 'retry-button',
-					text: '重试'
+					text: t('RETRY')
 				});
 				retryButton.onclick = () => {
 					noticeContainer.empty();
 					submitButton.disabled = false;
-					submitButton.textContent = isUpdate ? '更新' : '发布';
+					submitButton.textContent = isUpdate ? t('UPDATE') : t('PUBLISH');
 				};
 			}
 			
-			// 如果发生错误，重置按钮状态
+			// If error occurs, reset button state
 			if (submitButton.disabled) {
 				submitButton.disabled = false;
-				submitButton.textContent = isUpdate ? '更新' : '发布';
+				submitButton.textContent = isUpdate ? t('UPDATE') : t('PUBLISH');
 			}
 		};
 	}

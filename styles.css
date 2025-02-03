@@ -7,7 +7,7 @@ If your plugin does not need CSS, delete this file.
 
 */
 
-/* 基础模态框样式覆盖 */
+/* Basic Modal Style Override */
 .modal.mod-discourse-sync {
   max-width: 500px;
   max-height: 90vh;
@@ -18,7 +18,7 @@ If your plugin does not need CSS, delete this file.
   flex-direction: column;
 }
 
-/* 内容区域样式 */
+/* Content Area Style */
 .discourse-sync-modal {
   padding: 24px;
   width: 100%;
@@ -28,14 +28,14 @@ If your plugin does not need CSS, delete this file.
   overflow-y: auto;
 }
 
-/* 表单区域 */
+/* Form Area */
 .discourse-sync-modal .form-area {
   flex-grow: 1;
   min-height: 0;
   margin-bottom: 16px;
 }
 
-/* 按钮区域固定在底部 */
+/* Button Area Fixed at Bottom */
 .discourse-sync-modal .button-area {
   flex-shrink: 0;
   margin-top: auto;
@@ -48,11 +48,11 @@ If your plugin does not need CSS, delete this file.
   color: var(--text-normal);
 }
 
-/* 表单容器通用样式 */
+/* Common Form Container Style */
 .discourse-sync-modal .select-container,
 .discourse-sync-modal .tag-container {
   margin-bottom: 24px;
-  padding: 0;  /* 移除内边距 */
+  padding: 0;  /* Remove padding */
 }
 
 .discourse-sync-modal .select-container label,
@@ -63,7 +63,7 @@ If your plugin does not need CSS, delete this file.
   color: var(--text-normal);
 }
 
-/* 输入框和选择器样式 */
+/* Input and Selector Style */
 .discourse-sync-modal select,
 .discourse-sync-modal .tag-select-area {
   width: 100%;
@@ -108,7 +108,7 @@ If your plugin does not need CSS, delete this file.
   cursor: not-allowed;
 }
 
-/* 提示信息样式 */
+/* Notice Style */
 .discourse-sync-modal .notice {
   margin-top: 16px;
   padding: 16px;
@@ -171,7 +171,7 @@ If your plugin does not need CSS, delete this file.
   color: white;
 }
 
-/* 标签选择区域样式 */
+/* Tag Select Area Style */
 .discourse-sync-modal .tag-select-area {
   padding: 8px;
   display: flex;
@@ -181,7 +181,7 @@ If your plugin does not need CSS, delete this file.
 }
 
 .discourse-sync-modal .selected-tags {
-  display: none;  /* 默认隐藏 */
+  display: none;  /* Hidden by default */
   flex-wrap: wrap;
   gap: 6px;
   margin-bottom: 8px;
@@ -189,7 +189,7 @@ If your plugin does not need CSS, delete this file.
 }
 
 .discourse-sync-modal .selected-tags:not(:empty) {
-  display: flex;  /* 当有内容时显示 */
+  display: flex;  /* Show when has content */
 }
 
 .discourse-sync-modal .tag {
@@ -237,13 +237,13 @@ If your plugin does not need CSS, delete this file.
   border-bottom: 1px solid var(--background-modifier-border);
 }
 
-/* 标签输入容器 */
+/* Tag Input Container */
 .discourse-sync-modal .tag-input-container {
   position: relative;
   width: 100%;
 }
 
-/* 标签建议下拉框 */
+/* Tag Suggestion Dropdown */
 .discourse-sync-modal .tag-suggestions {
   position: fixed;
   background-color: var(--background-primary);
@@ -254,14 +254,14 @@ If your plugin does not need CSS, delete this file.
   max-height: 180px;
   overflow-y: auto;
   margin-top: 4px;
-  display: none;  /* 默认隐藏 */
+  display: none;  /* Hidden by default */
 }
 
 .discourse-sync-modal .tag-suggestions:not(:empty) {
-  display: block;  /* 当有内容时显示 */
+  display: block;  /* Show when has content */
 }
 
-/* 标签建议项 */
+/* Tag Suggestion Item */
 .discourse-sync-modal .tag-suggestion {
   padding: 8px 12px;
   cursor: pointer;
@@ -279,7 +279,7 @@ If your plugin does not need CSS, delete this file.
   background-color: var(--background-modifier-hover);
 }
 
-/* 美化滚动条 */
+/* Tag Suggestion Scrollbar Style */
 .discourse-sync-modal .tag-suggestions::-webkit-scrollbar {
   width: 4px;
 }
@@ -297,7 +297,7 @@ If your plugin does not need CSS, delete this file.
   background-color: var(--background-modifier-border-hover);
 }
 
-/* 移除 tag-container 的 z-index，避免干扰 */
+/* Remove tag-container z-index to avoid interference */
 .discourse-sync-modal .tag-container {
   position: relative;
 }

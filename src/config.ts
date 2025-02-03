@@ -1,5 +1,6 @@
 import { PluginSettingTab, Setting, App } from 'obsidian';
 import DiscourseSyncPlugin from './main';
+import { t } from './i18n';
 
 export interface DiscourseSyncSettings {
 	baseUrl: string;
@@ -28,8 +29,8 @@ export class DiscourseSyncSettingsTab extends PluginSettingTab {
 		containerEl.empty();
 
 		new Setting(containerEl)
-			.setName("论坛地址")
-			.setDesc("Discourse 论坛的网址")
+			.setName(t('FORUM_URL'))
+			.setDesc(t('FORUM_URL_DESC'))
 			.addText((text) =>
 				text
 					.setPlaceholder("https://forum.example.com")
@@ -41,8 +42,8 @@ export class DiscourseSyncSettingsTab extends PluginSettingTab {
 		);
 
 		new Setting(containerEl)
-			.setName("API 密钥")
-			.setDesc("在'/admin/api/keys'中创建的 API 密钥")
+			.setName(t('API_KEY'))
+			.setDesc(t('API_KEY_DESC'))
 			.addText((text) =>
 				text
 					.setPlaceholder("api_key")
@@ -54,8 +55,8 @@ export class DiscourseSyncSettingsTab extends PluginSettingTab {
 		);
 
 		new Setting(containerEl)
-			.setName("用户名")
-			.setDesc("Discourse 用户名")
+			.setName(t('USERNAME'))
+			.setDesc(t('USERNAME_DESC'))
 			.addText((text) =>
 				text
 					.setPlaceholder("username")
