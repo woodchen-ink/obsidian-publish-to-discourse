@@ -154,7 +154,7 @@ export default class DiscourseSyncPlugin extends Plugin {
 			edit_reason: "Updated from Obsidian",
 			tags: this.settings.selectedTags || []
 		} : {
-			title: this.activeFile.name,
+			title: (frontMatter?.title ? frontMatter?.title : this.activeFile.name),
 			raw: content,
 			category: this.settings.category,
 			tags: this.settings.selectedTags || []
