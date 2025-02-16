@@ -37,6 +37,15 @@ export default class DiscourseSyncPlugin extends Plugin {
 			},
 		});
 
+		// Add command to open post in browser
+		this.addCommand({
+			id: "open-in-discourse",
+			name: t('OPEN_IN_DISCOURSE'),
+			callback: () => {
+				this.openInDiscourse();
+			},
+		});
+
 	}
 
 	async loadSettings() {
@@ -173,10 +182,10 @@ export default class DiscourseSyncPlugin extends Plugin {
 			if (response.status === 200) {
 				if (!isUpdate) {
 					try {
-						// Get new post ID
+						// Get new post ID and topic ID
 						const responseData = response.json;
 						if (responseData && responseData.id) {
-							await this.updateFrontMatter(responseData.id);
+							await this.updateFrontMatter(responseData.id, responseData.topic_id);
 						} else {
 							return {
 								message: "Error",
@@ -236,7 +245,7 @@ export default class DiscourseSyncPlugin extends Plugin {
 	}
 
 	// Update frontmatter, add post ID
-	private async updateFrontMatter(postId: number) {
+	private async updateFrontMatter(postId: number, topicId: number) {
 		try {
 			// Get current active file
 			const activeFile = this.app.workspace.getActiveFile();
@@ -246,15 +255,25 @@ export default class DiscourseSyncPlugin extends Plugin {
 
 			const content = await this.app.vault.read(activeFile);
 			const fm = this.getFrontMatter(content);
+			const discourseUrl = `${this.settings.baseUrl}/t/${topicId}`;
 			
 			let newContent: string;
 			if (fm) {
 				// Update existing frontmatter
-				const updatedFm = { ...fm, discourse_post_id: postId };
+				const updatedFm = { 
+					...fm, 
+					discourse_post_id: postId, 
+					discourse_topic_id: topicId,
+					discourse_url: discourseUrl
+				};
 				newContent = content.replace(/^---\n[\s\S]*?\n---\n/, `---\n${yaml.stringify(updatedFm)}---\n`);
 			} else {
 				// Add new frontmatter
-				const newFm = { discourse_post_id: postId };
+				const newFm = { 
+					discourse_post_id: postId, 
+					discourse_topic_id: topicId,
+					discourse_url: discourseUrl
+				};
 				newContent = `---\n${yaml.stringify(newFm)}---\n${content}`;
 			}
 			
@@ -391,6 +410,27 @@ export default class DiscourseSyncPlugin extends Plugin {
 
 	private async syncToDiscourse() {
 		await this.openCategoryModal();
+	}
+
+	private async openInDiscourse() {
+		const activeFile = this.app.workspace.getActiveFile();
+		if (!activeFile) {
+			new NotifyUser(this.app, t('NO_ACTIVE_FILE')).open();
+			return;
+		}
+
+		const content = await this.app.vault.read(activeFile);
+		const fm = this.getFrontMatter(content);
+		const discourseUrl = fm?.discourse_url;
+		const topicId = fm?.discourse_topic_id;
+
+		if (!discourseUrl && !topicId) {
+			new NotifyUser(this.app, t('NO_TOPIC_ID')).open();
+			return;
+		}
+
+		const url = discourseUrl || `${this.settings.baseUrl}/t/${topicId}`;
+		window.open(url, '_blank');
 	}
 
 	onunload() {}

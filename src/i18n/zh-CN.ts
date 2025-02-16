@@ -34,4 +34,9 @@ export default {
     'TRY_AGAIN': '请重试',
     'POST_ID_ERROR': '发布成功但无法获取帖子ID',
     'SAVE_POST_ID_ERROR': '发布成功但无法保存帖子ID',
+
+    // Open in Discourse
+    'OPEN_IN_DISCOURSE': '在 Discourse 中打开',
+    'NO_ACTIVE_FILE': '没有打开的文件',
+    'NO_TOPIC_ID': '此笔记尚未发布到 Discourse'
 } 

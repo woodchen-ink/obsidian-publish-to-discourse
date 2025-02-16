@@ -34,4 +34,9 @@ export default {
     'TRY_AGAIN': 'Please try again',
     'POST_ID_ERROR': 'Published successfully but failed to get post ID',
     'SAVE_POST_ID_ERROR': 'Published successfully but failed to save post ID',
+
+    // Open in Discourse
+    'OPEN_IN_DISCOURSE': 'Open in Discourse',
+    'NO_ACTIVE_FILE': 'No active file',
+    'NO_TOPIC_ID': 'This note has not been published to Discourse yet'
 } 

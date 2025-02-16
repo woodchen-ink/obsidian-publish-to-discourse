@@ -28,3 +28,7 @@
 > 更新的前提是帖子本身是通过obsidian发布的.
 
 ![动图](./pics/20250124-001000.gif)
+
+## 在discourse中打开
+
+在笔记页面, 使用(Ctrl/Cmd + P)打开discourse的帖子.
