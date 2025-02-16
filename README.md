@@ -32,3 +32,7 @@
 ## 在discourse中打开
 
 在笔记页面, 使用(Ctrl/Cmd + P)打开discourse的帖子.
+
+![image](https://github.com/user-attachments/assets/f729f2a0-042e-4691-b00b-1fc96514cc34)
+
+![image](https://github.com/user-attachments/assets/c710ad08-7636-4a69-a6cf-1d4496fa623d)
