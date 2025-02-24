@@ -2,6 +2,7 @@ import { App, Menu, MenuItem, Plugin, Modal, requestUrl, TFile, moment } from 'o
 import { DEFAULT_SETTINGS, DiscourseSyncSettings, DiscourseSyncSettingsTab } from './config';
 import * as yaml from 'yaml';
 import { t, setLocale } from './i18n';
+import { expandEmbeds } from './expand-embeds';
 
 export default class DiscourseSyncPlugin extends Plugin {
 	settings: DiscourseSyncSettings;
@@ -385,7 +386,7 @@ export default class DiscourseSyncPlugin extends Plugin {
 		const syncDiscourse = (item: MenuItem) => {
 			item.setTitle(t('PUBLISH_TO_DISCOURSE'));
 			item.onClick(async () => {
-				const content = await this.app.vault.read(file);
+				const content = await expandEmbeds(this.app, file);
 				const fm = this.getFrontMatter(content);
 				this.activeFile = {
 					name: file.basename,
