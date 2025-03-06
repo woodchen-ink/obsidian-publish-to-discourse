@@ -6,6 +6,11 @@ export default {
     'API_KEY_DESC': "在'/admin/api/keys'中创建的 API 密钥",
     'USERNAME': '用户名',
     'USERNAME_DESC': 'Discourse 用户名',
+    'TEST_API_KEY': '测试连接',
+    'TESTING': '测试中...',
+    'API_TEST_SUCCESS': '连接成功！API密钥有效',
+    'API_TEST_FAILED': 'API密钥测试失败',
+    'MISSING_CREDENTIALS': '请先填写论坛地址、API密钥和用户名',
 
     // 发布页面
     'PUBLISH_TO_DISCOURSE': '发布到 Discourse',

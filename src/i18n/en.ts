@@ -6,6 +6,11 @@ export default {
     'API_KEY_DESC': "API key created in '/admin/api/keys'",
     'USERNAME': 'Username',
     'USERNAME_DESC': 'Your Discourse username',
+    'TEST_API_KEY': 'Test Connection',
+    'TESTING': 'Testing...',
+    'API_TEST_SUCCESS': 'Connection successful! API key is valid',
+    'API_TEST_FAILED': 'API key test failed',
+    'MISSING_CREDENTIALS': 'Please fill in Forum URL, API Key and Username first',
 
     // Publish page
     'PUBLISH_TO_DISCOURSE': 'Publish to Discourse',

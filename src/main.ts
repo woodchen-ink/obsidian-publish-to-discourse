@@ -445,6 +445,60 @@ export default class DiscourseSyncPlugin extends Plugin {
 		}
 	}
 
+	/**
+	 * 测试API密钥是否有效
+	 * @returns 返回测试结果，包含成功状态和消息
+	 */
+	async testApiKey(): Promise<{ success: boolean; message: string }> {
+		if (!this.settings.baseUrl || !this.settings.apiKey || !this.settings.disUser) {
+			return { 
+				success: false, 
+				message: t('MISSING_CREDENTIALS') 
+			};
+		}
+
+		const url = `${this.settings.baseUrl}/users/${this.settings.disUser}.json`;
+		const headers = {
+			"Content-Type": "application/json",
+			"Api-Key": this.settings.apiKey,
+			"Api-Username": this.settings.disUser,
+		};
+
+		try {
+			const response = await requestUrl({
+				url: url,
+				method: "GET",
+				contentType: "application/json",
+				headers,
+				throw: false
+			});
+
+			if (response.status === 200) {
+				return { 
+					success: true, 
+					message: t('API_TEST_SUCCESS') 
+				};
+			} else {
+				let errorMessage;
+				try {
+					const errorData = await response.json;
+					errorMessage = errorData?.errors || errorData?.error || `${t('API_TEST_FAILED')} (${response.status})`;
+				} catch (e) {
+					errorMessage = `${t('API_TEST_FAILED')} (${response.status})`;
+				}
+				return { 
+					success: false, 
+					message: errorMessage 
+				};
+			}
+		} catch (error) {
+			return { 
+				success: false, 
+				message: error.message || t('UNKNOWN_ERROR')
+			};
+		}
+	}
+
 	registerDirMenu(menu: Menu, file: TFile) {
 		const syncDiscourse = (item: MenuItem) => {
 			item.setTitle(t('PUBLISH_TO_DISCOURSE'));
