@@ -142,6 +142,7 @@ export default class DiscourseSyncPlugin extends Plugin {
 		// Check if frontmatter contains post ID
 		const frontMatter = this.getFrontMatter(content);
 		const postId = frontMatter?.discourse_post_id;
+		const topicId = frontMatter?.discourse_topic_id;
 		
 		// Filter out note properties section
 		content = content.replace(/^---[\s\S]*?---\n/, '');
@@ -156,32 +157,94 @@ export default class DiscourseSyncPlugin extends Plugin {
 		});
 
 		const isUpdate = postId !== undefined;
-		const endpoint = isUpdate ? `${this.settings.baseUrl}/posts/${postId}` : url;
-		const method = isUpdate ? "PUT" : "POST";
+		
+		if (isUpdate) {
+			// For updating a post
+			const postEndpoint = `${this.settings.baseUrl}/posts/${postId}`;
+			const topicEndpoint = `${this.settings.baseUrl}/t/${topicId}`;
+			
+			// First update the post content
+			try {
+				const postResponse = await requestUrl({
+					url: postEndpoint,
+					method: "PUT",
+					contentType: "application/json",
+					body: JSON.stringify({
+						raw: content,
+						edit_reason: "Updated from Obsidian"
+					}),
+					headers,
+					throw: false
+				});
+				
+				if (postResponse.status !== 200) {
+					return { 
+						message: "Error", 
+						error: `${t('UPDATE_FAILED')} (${postResponse.status})` 
+					};
+				}
+				
+				// Then update the topic (for title and tags)
+				const topicResponse = await requestUrl({
+					url: topicEndpoint,
+					method: "PUT",
+					contentType: "application/json",
+					body: JSON.stringify({
+						title: (frontMatter?.title ? frontMatter?.title : this.activeFile.name),
+						tags: this.settings.selectedTags || []
+					}),
+					headers,
+					throw: false
+				});
+				
+				if (topicResponse.status === 200) {
+					return { message: "Success" };
+				} else {
+					try {
+						const errorResponse = topicResponse.json;
+						if (errorResponse.errors && errorResponse.errors.length > 0) {
+							return { 
+								message: "Error",
+								error: errorResponse.errors.join('\n')
+							};
+						}
+						if (errorResponse.error) {
+							return {
+								message: "Error",
+								error: errorResponse.error
+							};
+						}
+					} catch (parseError) {
+						return {
+							message: "Error",
+							error: `${t('UPDATE_FAILED')} (${topicResponse.status})`
+						};
+					}
+				}
+			} catch (error) {
+				return { 
+					message: "Error",
+					error: `${t('UPDATE_FAILED')}: ${error.message || t('UNKNOWN_ERROR')}`
+				};
+			}
+		} else {
+			// For creating a new post
+			try {
+				const response = await requestUrl({
+					url,
+					method: "POST",
+					contentType: "application/json",
+					body: JSON.stringify({
+						title: (frontMatter?.title ? frontMatter?.title : this.activeFile.name),
+						raw: content,
+						category: this.settings.category,
+						tags: this.settings.selectedTags || []
+					}),
+					headers,
+					throw: false
+				});
 
-		const body = JSON.stringify(isUpdate ? {
-			raw: content,
-			edit_reason: "Updated from Obsidian",
-			tags: this.settings.selectedTags || []
-		} : {
-			title: (frontMatter?.title ? frontMatter?.title : this.activeFile.name),
-			raw: content,
-			category: this.settings.category,
-			tags: this.settings.selectedTags || []
-		});
-
-		try {
-			const response = await requestUrl({
-				url: endpoint,
-				method: method,
-				contentType: "application/json",
-				body,
-				headers,
-				throw: false
-			});
-
-			if (response.status === 200) {
-				if (!isUpdate) {
+				if (response.status === 200) {
 					try {
 						// Get new post ID and topic ID
 						const responseData = response.json;
@@ -199,35 +262,35 @@ export default class DiscourseSyncPlugin extends Plugin {
 							error: t('SAVE_POST_ID_ERROR')
 						};
 					}
-				}
-				return { message: "Success" };
-			} else {
-				try {
-					const errorResponse = response.json;
-					if (errorResponse.errors && errorResponse.errors.length > 0) {
-						return { 
-							message: "Error",
-							error: errorResponse.errors.join('\n')
-						};
-					}
-					if (errorResponse.error) {
+					return { message: "Success" };
+				} else {
+					try {
+						const errorResponse = response.json;
+						if (errorResponse.errors && errorResponse.errors.length > 0) {
+							return { 
+								message: "Error",
+								error: errorResponse.errors.join('\n')
+							};
+						}
+						if (errorResponse.error) {
+							return {
+								message: "Error",
+								error: errorResponse.error
+							};
+						}
+					} catch (parseError) {
 						return {
 							message: "Error",
-							error: errorResponse.error
+							error: `${t('PUBLISH_FAILED')} (${response.status})`
 						};
 					}
-				} catch (parseError) {
-					return {
-						message: "Error",
-						error: `${isUpdate ? t('UPDATE_FAILED') : t('PUBLISH_FAILED')} (${response.status})`
-					};
 				}
+			} catch (error) {
+				return { 
+					message: "Error",
+					error: `${t('PUBLISH_FAILED')}: ${error.message || t('UNKNOWN_ERROR')}`
+				};
 			}
-		} catch (error) {
-			return { 
-				message: "Error",
-				error: `${isUpdate ? t('UPDATE_FAILED') : t('PUBLISH_FAILED')}: ${error.message || t('UNKNOWN_ERROR')}`
-			};
 		}
 		return { message: "Error", error: `${isUpdate ? t('UPDATE_FAILED') : t('PUBLISH_FAILED')}, ${t('TRY_AGAIN')}` };
 	}
@@ -527,6 +590,11 @@ export class SelectCategoryModal extends Modal {
 		// Selected tags display area
 		const selectedTagsContainer = tagSelectArea.createEl('div', { cls: 'selected-tags' });
 		const selectedTags = new Set<string>();
+		
+		// Initialize with existing tags if updating
+		if (isUpdate && this.plugin.settings.selectedTags && this.plugin.settings.selectedTags.length > 0) {
+			this.plugin.settings.selectedTags.forEach(tag => selectedTags.add(tag));
+		}
 
 		// Update selected tags display
 		const updateSelectedTags = () => {
@@ -546,6 +614,9 @@ export class SelectCategoryModal extends Modal {
 				};
 			});
 		};
+		
+		// Initialize tag display
+		updateSelectedTags();
 
 		// Create tag input container
 		const tagInputContainer = tagSelectArea.createEl('div', { cls: 'tag-input-container' });
