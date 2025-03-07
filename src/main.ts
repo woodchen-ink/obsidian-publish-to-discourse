@@ -517,6 +517,23 @@ export default class DiscourseSyncPlugin extends Plugin {
 	}
 
 	private async openCategoryModal() {
+		// 确保activeFile已设置
+		if (!this.activeFile) {
+			const activeFile = this.app.workspace.getActiveFile();
+			if (!activeFile) {
+				new NotifyUser(this.app, t('NO_ACTIVE_FILE')).open();
+				return;
+			}
+			
+			const content = await this.app.vault.read(activeFile);
+			const fm = this.getFrontMatter(content);
+			this.activeFile = {
+				name: activeFile.basename,
+				content: content,
+				postId: fm?.discourse_post_id
+			};
+		}
+		
 		const [categories, tags] = await Promise.all([
 			this.fetchCategories(),
 			this.fetchTags()
@@ -615,6 +632,13 @@ export class SelectCategoryModal extends Modal {
 		const { contentEl } = this;
 		contentEl.empty();
 		contentEl.addClass('discourse-sync-modal');
+
+		// 确保activeFile存在
+		if (!this.plugin.activeFile) {
+			contentEl.createEl("h1", { text: t('ERROR') });
+			contentEl.createEl("p", { text: t('NO_ACTIVE_FILE') });
+			return;
+		}
 
 		const isUpdate = this.plugin.activeFile.postId !== undefined;
 		contentEl.createEl("h1", { text: isUpdate ? t('UPDATE_POST') : t('PUBLISH_TO_DISCOURSE') });
