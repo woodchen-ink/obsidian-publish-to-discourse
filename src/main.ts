@@ -58,7 +58,7 @@ export default class DiscourseSyncPlugin extends Plugin {
 	}
 
 	extractImageReferences(content: string): string[] {
-		const regex = /!\[\[(.*?)\]\]/g;
+		const regex = /!\[\[(.*?)(?:\|.*?)?\]\]/g;
 		const matches = [];
 		let match;
 		while ((match = regex.exec(content)) !== null) {
@@ -150,10 +150,12 @@ export default class DiscourseSyncPlugin extends Plugin {
 		const imageReferences = this.extractImageReferences(content);
 		const imageUrls = await this.uploadImages(imageReferences);
 
+		// 替换所有图片引用，包括带有属性的图片
 		imageReferences.forEach((ref, index) => {
-			const obsRef = `![[${ref}]]`;
+			// 使用正则表达式匹配包含属性的图片引用
+			const regex = new RegExp(`!\\[\\[${ref.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?:\\|.*?)?\\]\\]`, 'g');
 			const discoRef = `![${ref}](${imageUrls[index]})`;
-			content = content.replace(obsRef, discoRef);
+			content = content.replace(regex, discoRef);
 		});
 
 		const isUpdate = postId !== undefined;
@@ -342,6 +344,13 @@ export default class DiscourseSyncPlugin extends Plugin {
 			}
 			
 			await this.app.vault.modify(activeFile, newContent);
+			
+			// 更新 activeFile 对象，确保它反映最新状态
+			this.activeFile = {
+				name: activeFile.basename,
+				content: newContent,
+				postId: postId
+			};
 		} catch (error) {
 			return {
 				message: "Error",
@@ -517,22 +526,20 @@ export default class DiscourseSyncPlugin extends Plugin {
 	}
 
 	private async openCategoryModal() {
-		// 确保activeFile已设置
-		if (!this.activeFile) {
-			const activeFile = this.app.workspace.getActiveFile();
-			if (!activeFile) {
-				new NotifyUser(this.app, t('NO_ACTIVE_FILE')).open();
-				return;
-			}
-			
-			const content = await this.app.vault.read(activeFile);
-			const fm = this.getFrontMatter(content);
-			this.activeFile = {
-				name: activeFile.basename,
-				content: content,
-				postId: fm?.discourse_post_id
-			};
+		// 每次都重新获取 activeFile 的最新内容，不使用缓存
+		const activeFile = this.app.workspace.getActiveFile();
+		if (!activeFile) {
+			new NotifyUser(this.app, t('NO_ACTIVE_FILE')).open();
+			return;
 		}
+		
+		const content = await this.app.vault.read(activeFile);
+		const fm = this.getFrontMatter(content);
+		this.activeFile = {
+			name: activeFile.basename,
+			content: content,
+			postId: fm?.discourse_post_id
+		};
 		
 		const [categories, tags] = await Promise.all([
 			this.fetchCategories(),
