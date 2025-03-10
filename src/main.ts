@@ -46,10 +46,10 @@ export default class PublishToDiscourse extends Plugin implements PluginInterfac
 
 		// 添加发布命令
 		this.addCommand({
-			id: "category-modal",
+			id: "publish-to-discourse",
 			name: t('PUBLISH_TO_DISCOURSE'),
 			callback: () => {
-				this.openCategoryModal();
+				this.publishToDiscourse();
 			},
 		});
 
@@ -76,49 +76,43 @@ export default class PublishToDiscourse extends Plugin implements PluginInterfac
 		const syncDiscourse = (item: MenuItem) => {
 			item.setTitle(t('PUBLISH_TO_DISCOURSE'));
 			item.onClick(async () => {
-				const content = await expandEmbeds(this.app, file);
-				const fm = getFrontMatter(content);
-				this.activeFile = {
-					name: file.basename,
-					content: content,
-					postId: fm?.discourse_post_id
-				};
-				await this.syncToDiscourse();
+				await this.publishToDiscourse(file);
 			});
 		}
 		menu.addItem(syncDiscourse)
 	}
 
-	// 打开分类选择模态框
-	private async openCategoryModal() {
-		// 每次都重新获取 activeFile 的最新内容，不使用缓存
-		const activeFile = this.app.workspace.getActiveFile();
-		if (!activeFile) {
+	// 同步到Discourse - 统一入口点
+	private async publishToDiscourse(file?: TFile) {
+		// 如果提供了特定文件，使用该文件；否则使用当前活动文件
+		const targetFile = file || this.app.workspace.getActiveFile();
+		if (!targetFile) {
 			new NotifyUser(this.app, t('NO_ACTIVE_FILE')).open();
 			return;
 		}
 		
-		// 使用expandEmbeds处理嵌入内容，而不是直接读取文件内容
-		const content = await expandEmbeds(this.app, activeFile);
+		// 使用expandEmbeds处理嵌入内容
+		const content = await expandEmbeds(this.app, targetFile);
 		const fm = getFrontMatter(content);
+		
+		// 初始化activeFile对象
 		this.activeFile = {
-			name: activeFile.basename,
+			name: targetFile.basename,
 			content: content,
-			postId: fm?.discourse_post_id
+			postId: fm?.discourse_post_id,
+			// 从frontmatter中获取标签，如果没有则使用空数组
+			tags: fm?.discourse_tags || []
 		};
 		
+		// 获取分类和标签列表
 		const [categories, tags] = await Promise.all([
 			this.api.fetchCategories(),
 			this.api.fetchTags()
 		]);
+		
 		if (categories.length > 0) {
 			new SelectCategoryModal(this.app, this, categories, tags).open();
 		}
-	}
-
-	// 同步到Discourse
-	private async syncToDiscourse() {
-		await this.openCategoryModal();
 	}
 
 	// 在Discourse中打开
@@ -165,6 +159,9 @@ export default class PublishToDiscourse extends Plugin implements PluginInterfac
 		const topicId = frontMatter?.discourse_topic_id;
 		const isUpdate = postId !== undefined;
 		
+		// 获取当前选择的标签
+		const currentTags = this.activeFile.tags || [];
+		
 		// 发布或更新帖子
 		let result;
 		try {
@@ -176,20 +173,25 @@ export default class PublishToDiscourse extends Plugin implements PluginInterfac
 					(frontMatter?.title ? frontMatter?.title : this.activeFile.name),
 					content,
 					this.settings.category,
-					this.settings.selectedTags || []
+					currentTags
 				);
+				
+				// 如果更新成功，更新Front Matter
+				if (result.success) {
+					await this.updateFrontMatter(postId, topicId, currentTags);
+				}
 			} else {
 				// 创建新帖子
 				result = await this.api.createPost(
 					(frontMatter?.title ? frontMatter?.title : this.activeFile.name),
 					content,
 					this.settings.category,
-					this.settings.selectedTags || []
+					currentTags
 				);
 				
 				// 如果创建成功，更新Front Matter
 				if (result.success && result.postId && result.topicId) {
-					await this.updateFrontMatter(result.postId, result.topicId);
+					await this.updateFrontMatter(result.postId, result.topicId, currentTags);
 				}
 			}
 			
@@ -205,7 +207,7 @@ export default class PublishToDiscourse extends Plugin implements PluginInterfac
 	}
 
 	// 更新Front Matter
-	private async updateFrontMatter(postId: number, topicId: number) {
+	private async updateFrontMatter(postId: number, topicId: number, tags: string[]) {
 		try {
 			// 获取当前活动文件
 			const activeFile = this.app.workspace.getActiveFile();
@@ -224,7 +226,8 @@ export default class PublishToDiscourse extends Plugin implements PluginInterfac
 					...fm, 
 					discourse_post_id: postId, 
 					discourse_topic_id: topicId,
-					discourse_url: discourseUrl
+					discourse_url: discourseUrl,
+					discourse_tags: tags
 				};
 				newContent = content.replace(/^---\n[\s\S]*?\n---\n/, `---\n${yaml.stringify(updatedFm)}---\n`);
 			} else {
@@ -232,7 +235,8 @@ export default class PublishToDiscourse extends Plugin implements PluginInterfac
 				const newFm = { 
 					discourse_post_id: postId, 
 					discourse_topic_id: topicId,
-					discourse_url: discourseUrl
+					discourse_url: discourseUrl,
+					discourse_tags: tags
 				};
 				newContent = `---\n${yaml.stringify(newFm)}---\n${content}`;
 			}
@@ -242,7 +246,8 @@ export default class PublishToDiscourse extends Plugin implements PluginInterfac
 			this.activeFile = {
 				name: activeFile.basename,
 				content: newContent,
-				postId: postId
+				postId: postId,
+				tags: tags
 			};
 		} catch (error) {
 			new NotifyUser(this.app, t('UPDATE_FAILED')).open();

@@ -63,8 +63,8 @@ export class SelectCategoryModal extends Modal {
         const selectedTags = new Set<string>();
         
         // 初始化已选标签
-        if (this.plugin.settings.selectedTags && this.plugin.settings.selectedTags.length > 0) {
-            this.plugin.settings.selectedTags.forEach(tag => selectedTags.add(tag));
+        if (this.plugin.activeFile.tags && this.plugin.activeFile.tags.length > 0) {
+            this.plugin.activeFile.tags.forEach(tag => selectedTags.add(tag));
         }
         
         // 更新标签显示
@@ -209,9 +209,8 @@ export class SelectCategoryModal extends Modal {
         const noticeContainer = buttonArea.createEl('div', { cls: 'notice-container' });
         
         submitButton.onclick = async () => {
-            // 保存选中的标签
-            this.plugin.settings.selectedTags = Array.from(selectedTags);
-            await this.plugin.saveSettings();
+            // 保存当前选择的标签到activeFile对象
+            this.plugin.activeFile.tags = Array.from(selectedTags);
             
             // 禁用提交按钮，显示加载状态
             submitButton.disabled = true;

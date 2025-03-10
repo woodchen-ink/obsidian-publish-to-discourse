@@ -1,5 +1,4 @@
 import { App, TFile } from 'obsidian';
-import { expandEmbeds } from './expand-embeds';
 import { NotifyUser } from './notification';
 import { DiscourseAPI } from './api';
 import { isImageFile } from './utils';
@@ -68,10 +67,5 @@ export class EmbedHandler {
             }
         });
         return processedContent;
-    }
-
-    // 处理文件内容，展开嵌入内容
-    async expandFileContent(file: TFile): Promise<string> {
-        return await expandEmbeds(this.app, file);
     }
 } 

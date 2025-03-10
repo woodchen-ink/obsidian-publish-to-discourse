@@ -7,15 +7,13 @@ export interface DiscourseSyncSettings {
 	apiKey: string;
 	disUser: string;
 	category: number;
-	selectedTags: string[];
 }
 
 export const DEFAULT_SETTINGS: DiscourseSyncSettings = {
 	baseUrl: "https://yourforum.example.com",
 	apiKey: "apikey",
 	disUser: "DiscourseUsername",
-	category: 1,
-	selectedTags: []
+	category: 1
 };
 
 export class DiscourseSyncSettingsTab extends PluginSettingTab {

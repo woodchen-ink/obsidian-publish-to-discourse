@@ -4,6 +4,7 @@ export interface ActiveFile {
     name: string;
     content: string;
     postId?: number;
+    tags?: string[];
 }
 
 export interface PluginInterface {
