@@ -94,12 +94,15 @@ export default class PublishToDiscourse extends Plugin implements PluginInterfac
 		// 使用expandEmbeds处理嵌入内容
 		const content = await expandEmbeds(this.app, targetFile);
 		const fm = getFrontMatter(content);
+		const postId = fm?.discourse_post_id;
+		const topicId = fm?.discourse_topic_id;
+		const isUpdate = postId !== undefined && topicId !== undefined;
 		
 		// 初始化activeFile对象
 		this.activeFile = {
 			name: targetFile.basename,
 			content: content,
-			postId: fm?.discourse_post_id,
+			postId: postId,
 			// 从frontmatter中获取标签，如果没有则使用空数组
 			tags: fm?.discourse_tags || []
 		};
@@ -109,6 +112,32 @@ export default class PublishToDiscourse extends Plugin implements PluginInterfac
 			this.api.fetchCategories(),
 			this.api.fetchTags()
 		]);
+		
+		// 如果是更新帖子，先从Discourse获取最新标签和分类
+		if (isUpdate) {
+			try {
+				const topicInfo = await this.api.fetchTopicInfo(topicId);
+				
+				// 用Discourse上的标签覆盖本地标签
+				if (topicInfo.tags.length > 0) {
+					this.activeFile.tags = topicInfo.tags;
+					console.log(`Updated tags from Discourse: ${topicInfo.tags.join(', ')}`);
+				}
+				
+				// 如果获取到了分类ID，更新设置中的分类
+				if (topicInfo.categoryId) {
+					// 查找分类名称
+					const category = categories.find(c => c.id === topicInfo.categoryId);
+					if (category) {
+						this.settings.category = category.id;
+						console.log(`Updated category from Discourse: ${category.name} (${category.id})`);
+					}
+				}
+			} catch (error) {
+				console.error("Failed to fetch topic info from Discourse:", error);
+				// 如果获取失败，继续使用本地标签和分类
+			}
+		}
 		
 		if (categories.length > 0) {
 			new SelectCategoryModal(this.app, this, categories, tags).open();
@@ -219,6 +248,13 @@ export default class PublishToDiscourse extends Plugin implements PluginInterfac
 			const fm = getFrontMatter(content);
 			const discourseUrl = `${this.settings.baseUrl}/t/${topicId}`;
 			
+			// 获取当前分类信息
+			const categoryId = this.settings.category;
+			// 查找分类名称
+			const categories = await this.api.fetchCategories();
+			const category = categories.find(c => c.id === categoryId);
+			const categoryName = category ? category.name : '';
+			
 			let newContent: string;
 			if (fm) {
 				// 更新现有Front Matter
@@ -227,7 +263,9 @@ export default class PublishToDiscourse extends Plugin implements PluginInterfac
 					discourse_post_id: postId, 
 					discourse_topic_id: topicId,
 					discourse_url: discourseUrl,
-					discourse_tags: tags
+					discourse_tags: tags,
+					discourse_category_id: categoryId,
+					discourse_category: categoryName
 				};
 				newContent = content.replace(/^---\n[\s\S]*?\n---\n/, `---\n${yaml.stringify(updatedFm)}---\n`);
 			} else {
@@ -236,7 +274,9 @@ export default class PublishToDiscourse extends Plugin implements PluginInterfac
 					discourse_post_id: postId, 
 					discourse_topic_id: topicId,
 					discourse_url: discourseUrl,
-					discourse_tags: tags
+					discourse_tags: tags,
+					discourse_category_id: categoryId,
+					discourse_category: categoryName
 				};
 				newContent = `---\n${yaml.stringify(newFm)}---\n${content}`;
 			}

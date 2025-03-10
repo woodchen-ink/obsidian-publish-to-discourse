@@ -387,4 +387,46 @@ export class DiscourseAPI {
             };
         }
     }
+
+    // 获取特定主题的标签和分类信息
+    async fetchTopicInfo(topicId: number): Promise<{ tags: string[], categoryId?: number }> {
+        try {
+            const url = `${this.settings.baseUrl}/t/${topicId}.json`;
+            const headers = {
+                "Api-Key": this.settings.apiKey,
+                "Api-Username": this.settings.disUser,
+            };
+            
+            const response = await requestUrl({
+                url,
+                method: "GET",
+                headers,
+                throw: false
+            });
+            
+            if (response.status === 200) {
+                const data = response.json;
+                return {
+                    tags: data?.tags || [],
+                    categoryId: data?.category_id
+                };
+            }
+            
+            return { tags: [] };
+        } catch (error) {
+            new NotifyUser(this.app, `Exception while fetching topic info: ${error}`).open();
+            return { tags: [] };
+        }
+    }
+
+    // 获取特定主题的标签
+    async fetchTopicTags(topicId: number): Promise<string[]> {
+        try {
+            const topicInfo = await this.fetchTopicInfo(topicId);
+            return topicInfo.tags;
+        } catch (error) {
+            new NotifyUser(this.app, `Exception while fetching topic tags: ${error}`).open();
+            return [];
+        }
+    }
 } 
