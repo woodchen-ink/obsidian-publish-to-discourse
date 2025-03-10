@@ -1,5 +1,5 @@
 import { PluginSettingTab, Setting, App, Notice, ButtonComponent } from 'obsidian';
-import DiscourseSyncPlugin from './main';
+import PublishToDiscourse from './main';
 import { t } from './i18n';
 
 export interface DiscourseSyncSettings {
@@ -19,8 +19,8 @@ export const DEFAULT_SETTINGS: DiscourseSyncSettings = {
 };
 
 export class DiscourseSyncSettingsTab extends PluginSettingTab {
-	plugin: DiscourseSyncPlugin;
-	constructor(app: App, plugin: DiscourseSyncPlugin) {
+	plugin: PublishToDiscourse;
+	constructor(app: App, plugin: PublishToDiscourse) {
 		super(app, plugin);
 	}
 
@@ -78,7 +78,7 @@ export class DiscourseSyncSettingsTab extends PluginSettingTab {
 						button.setButtonText(t('TESTING'));
 						button.setDisabled(true);
 						
-						const result = await this.plugin.testApiKey();
+						const result = await this.plugin.api.testApiKey();
 						
 						button.setButtonText(t('TEST_API_KEY'));
 						button.setDisabled(false);

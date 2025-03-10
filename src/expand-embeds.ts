@@ -16,6 +16,27 @@
 import { App, TFile, CachedMetadata } from "obsidian";
 
 /**
+ * 将frontmatter转换为Markdown引用格式
+ */
+function convertFrontmatterToQuote(content: string): string {
+  // 检查是否有frontmatter
+  const fmMatch = content.match(/^---\n([\s\S]*?)\n---\n/);
+  if (!fmMatch) return content;
+
+  // 提取frontmatter内容
+  const fmContent = fmMatch[1];
+  
+  // 将frontmatter内容转换为引用格式
+  const quotedFm = fmContent
+    .split('\n')
+    .map(line => `> ${line}`)
+    .join('\n');
+  
+  // 替换原始frontmatter
+  return content.replace(/^---\n[\s\S]*?\n---\n/, `${quotedFm}\n\n`);
+}
+
+/**
  * Recursively expands embedded content (including subpath references),
  * allowing the same (file+subpath) to appear multiple times if it's *not*
  * in the same immediate recursion stack.
@@ -64,7 +85,10 @@ export async function expandEmbeds(
     }
 
     // Recursively expand that subpath
-    return expandEmbeds(app, linkedTFile, stack, sub);
+    const expandedContent = await expandEmbeds(app, linkedTFile, stack, sub);
+    
+    // 将嵌入内容中的frontmatter转换为引用格式
+    return convertFrontmatterToQuote(expandedContent);
   });
 
   // Pop it from stack
@@ -101,9 +125,11 @@ function sliceSubpathContent(
     const { start, end } = block.position;
     if (!end) {
       // Goes to EOF if no explicit end
-      return fileContent.substring(start.offset);
+      const slicedContent = fileContent.substring(start.offset);
+      return convertFrontmatterToQuote(slicedContent);
     } else {
-      return fileContent.substring(start.offset, end.offset);
+      const slicedContent = fileContent.substring(start.offset, end.offset);
+      return convertFrontmatterToQuote(slicedContent);
     }
   }
 
@@ -147,7 +173,8 @@ function sliceHeading(content: string, fileCache: CachedMetadata, headingName: s
   }
   console.log(`"Sliceheading for ${heading}, level ${thisLevel}, offsets ${startOffset} and ${endOffset}."`)
 
-  return content.substring(startOffset, endOffset).trim();
+  const slicedContent = content.substring(startOffset, endOffset).trim();
+  return convertFrontmatterToQuote(slicedContent);
 }
 
 /**
