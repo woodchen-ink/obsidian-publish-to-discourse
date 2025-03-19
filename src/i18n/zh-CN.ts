@@ -6,6 +6,8 @@ export default {
     'API_KEY_DESC': "在'/admin/api/keys'中创建的 API 密钥",
     'USERNAME': '用户名',
     'USERNAME_DESC': 'Discourse 用户名',
+    'SKIP_H1': '跳过一级标题',
+    'SKIP_H1_DESC': '发布到 Discourse 时跳过笔记中的一级标题',
     'TEST_API_KEY': '测试连接',
     'TESTING': '测试中...',
     'API_TEST_SUCCESS': '连接成功！API密钥有效',

@@ -6,6 +6,8 @@ export default {
     'API_KEY_DESC': "API key created in '/admin/api/keys'",
     'USERNAME': 'Username',
     'USERNAME_DESC': 'Your Discourse username',
+    'SKIP_H1': 'Skip First Heading',
+    'SKIP_H1_DESC': 'Skip the first heading (H1) when publishing to Discourse',
     'TEST_API_KEY': 'Test Connection',
     'TESTING': 'Testing...',
     'API_TEST_SUCCESS': 'Connection successful! API key is valid',

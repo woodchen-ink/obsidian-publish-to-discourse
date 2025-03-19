@@ -182,6 +182,12 @@ export default class PublishToDiscourse extends Plugin implements PluginInterfac
 		// 替换嵌入引用为Markdown格式
 		content = this.embedHandler.replaceEmbedReferences(content, embedReferences, uploadedUrls);
 
+		// 如果启用了"跳过一级标题"选项，则删除所有H1标题
+		if (this.settings.skipH1) {
+			// 匹配Markdown中的所有H1标题（# 标题）
+			content = content.replace(/^\s*# [^\n]+\n?/gm, '');
+		}
+
 		// 获取Front Matter
 		const frontMatter = getFrontMatter(this.activeFile.content);
 		const postId = frontMatter?.discourse_post_id;

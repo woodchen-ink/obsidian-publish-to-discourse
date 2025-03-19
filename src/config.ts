@@ -7,13 +7,15 @@ export interface DiscourseSyncSettings {
 	apiKey: string;
 	disUser: string;
 	category: number;
+	skipH1: boolean;
 }
 
 export const DEFAULT_SETTINGS: DiscourseSyncSettings = {
 	baseUrl: "https://yourforum.example.com",
 	apiKey: "apikey",
 	disUser: "DiscourseUsername",
-	category: 1
+	category: 1,
+	skipH1: false
 };
 
 export class DiscourseSyncSettingsTab extends PluginSettingTab {
@@ -64,6 +66,18 @@ export class DiscourseSyncSettingsTab extends PluginSettingTab {
 						await this.plugin.saveSettings();
 					}),
 		);
+
+		new Setting(containerEl)
+			.setName(t('SKIP_H1'))
+			.setDesc(t('SKIP_H1_DESC'))
+			.addToggle((toggle) => 
+				toggle
+					.setValue(this.plugin.settings.skipH1)
+					.onChange(async (value) => {
+						this.plugin.settings.skipH1 = value;
+						await this.plugin.saveSettings();
+					})
+			);
 
 		new Setting(containerEl)
 			.setName(t('TEST_API_KEY'))
