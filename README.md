@@ -37,7 +37,6 @@
 
 ![image](https://github.com/user-attachments/assets/c710ad08-7636-4a69-a6cf-1d4496fa623d)
 
-当然, 我可以帮你优化这段表达, 并提供中英文对照版本。以下是优化后的内容:
 
 ---
 
