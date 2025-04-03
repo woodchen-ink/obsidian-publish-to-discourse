@@ -221,7 +221,7 @@ export class DiscourseAPI {
     // 获取分类列表
     async fetchCategories(): Promise<{ id: number; name: string }[]> {
         try {
-            const url = `${this.settings.baseUrl}/categories.json`;
+            const url = `${this.settings.baseUrl}/categories.json?include_subcategories=true`;
             const headers = {
                 "Api-Key": this.settings.apiKey,
                 "Api-Username": this.settings.disUser,
