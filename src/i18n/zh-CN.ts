@@ -45,5 +45,13 @@ export default {
     // Open in Discourse
     'OPEN_IN_DISCOURSE': '在 Discourse 中打开',
     'NO_ACTIVE_FILE': '没有打开的文件',
-    'NO_TOPIC_ID': '此笔记尚未发布到 Discourse'
+    'NO_TOPIC_ID': '此笔记尚未发布到 Discourse',
+
+    // 分类冲突
+    'CATEGORY_CONFLICT_TITLE': '分类冲突',
+    'CATEGORY_CONFLICT_DESC': '检测到本地设置的分类与 Discourse 上的分类不同，请选择要使用的分类：',
+    'LOCAL_CATEGORY': '本地分类（frontmatter中设置）',
+    'REMOTE_CATEGORY': '远程分类（Discourse上的分类）',
+    'KEEP_LOCAL_CATEGORY': '保持本地分类',
+    'USE_REMOTE_CATEGORY': '使用远程分类'
 } 

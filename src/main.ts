@@ -5,7 +5,7 @@ import { t, setLocale } from './i18n';
 import { expandEmbeds } from './expand-embeds';
 import { DiscourseAPI } from './api';
 import { EmbedHandler } from './embed-handler';
-import { SelectCategoryModal } from './ui';
+import { SelectCategoryModal, CategoryConflictModal } from './ui';
 import { NotifyUser } from './notification';
 import { getFrontMatter, removeFrontMatter } from './utils';
 import { ActiveFile, PluginInterface } from './types';
@@ -124,13 +124,49 @@ export default class PublishToDiscourse extends Plugin implements PluginInterfac
 					console.log(`Updated tags from Discourse: ${topicInfo.tags.join(', ')}`);
 				}
 				
-				// 如果获取到了分类ID，更新设置中的分类
+				// 处理分类冲突
 				if (topicInfo.categoryId) {
-					// 查找分类名称
-					const category = categories.find(c => c.id === topicInfo.categoryId);
-					if (category) {
-						this.settings.category = category.id;
-						console.log(`Updated category from Discourse: ${category.name} (${category.id})`);
+					const localCategoryId = fm?.discourse_category_id;
+					const remoteCategoryId = topicInfo.categoryId;
+					
+					// 如果本地有设置分类ID且与远程不同，询问用户
+					if (localCategoryId && localCategoryId !== remoteCategoryId) {
+						const localCategory = categories.find(c => c.id === localCategoryId);
+						const remoteCategory = categories.find(c => c.id === remoteCategoryId);
+						
+						if (localCategory && remoteCategory) {
+							const conflictModal = new CategoryConflictModal(
+								this.app,
+								this,
+								localCategoryId,
+								localCategory.name,
+								remoteCategoryId,
+								remoteCategory.name
+							);
+							
+							const useRemote = await conflictModal.showAndWait();
+							if (useRemote) {
+								this.settings.category = remoteCategoryId;
+								console.log(`User chose remote category: ${remoteCategory.name} (${remoteCategoryId})`);
+							} else {
+								this.settings.category = localCategoryId;
+								console.log(`User kept local category: ${localCategory.name} (${localCategoryId})`);
+							}
+						} else {
+							// 如果找不到分类信息，使用远程分类
+							this.settings.category = remoteCategoryId;
+						}
+					} else if (localCategoryId) {
+						// 如果本地有设置且与远程相同，使用本地设置
+						this.settings.category = localCategoryId;
+						console.log(`Using local category: ${localCategoryId}`);
+					} else {
+						// 如果本地没有设置，使用远程分类
+						const category = categories.find(c => c.id === remoteCategoryId);
+						if (category) {
+							this.settings.category = category.id;
+							console.log(`Using remote category: ${category.name} (${category.id})`);
+						}
 					}
 				}
 			} catch (error) {

@@ -45,5 +45,13 @@ export default {
     // Open in Discourse
     'OPEN_IN_DISCOURSE': 'Open in Discourse',
     'NO_ACTIVE_FILE': 'No active file',
-    'NO_TOPIC_ID': 'This note has not been published to Discourse yet'
+    'NO_TOPIC_ID': 'This note has not been published to Discourse yet',
+
+    // Category conflict
+    'CATEGORY_CONFLICT_TITLE': 'Category Conflict',
+    'CATEGORY_CONFLICT_DESC': 'The local category setting differs from the remote category on Discourse. Please choose which category to use:',
+    'LOCAL_CATEGORY': 'Local Category (set in frontmatter)',
+    'REMOTE_CATEGORY': 'Remote Category (from Discourse)',
+    'KEEP_LOCAL_CATEGORY': 'Keep Local Category',
+    'USE_REMOTE_CATEGORY': 'Use Remote Category'
 } 

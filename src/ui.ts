@@ -290,4 +290,102 @@ export class SelectCategoryModal extends Modal {
         const { contentEl } = this;
         contentEl.empty();
     }
+}
+
+// 分类冲突确认对话框
+export class CategoryConflictModal extends Modal {
+    plugin: PluginInterface;
+    localCategoryId: number;
+    localCategoryName: string;
+    remoteCategoryId: number;
+    remoteCategoryName: string;
+    resolve: (useRemote: boolean) => void;
+
+    constructor(
+        app: App, 
+        plugin: PluginInterface, 
+        localCategoryId: number,
+        localCategoryName: string,
+        remoteCategoryId: number,
+        remoteCategoryName: string
+    ) {
+        super(app);
+        this.plugin = plugin;
+        this.localCategoryId = localCategoryId;
+        this.localCategoryName = localCategoryName;
+        this.remoteCategoryId = remoteCategoryId;
+        this.remoteCategoryName = remoteCategoryName;
+    }
+
+    // 返回一个Promise，让调用者等待用户选择
+    showAndWait(): Promise<boolean> {
+        return new Promise((resolve) => {
+            this.resolve = resolve;
+            this.open();
+        });
+    }
+
+    onOpen() {
+        const { contentEl } = this;
+        contentEl.empty();
+        contentEl.addClass('discourse-category-conflict-modal');
+
+        // 标题
+        contentEl.createEl('h2', { text: t('CATEGORY_CONFLICT_TITLE') });
+
+        // 说明文字
+        const description = contentEl.createEl('div', { cls: 'conflict-description' });
+        description.createEl('p', { text: t('CATEGORY_CONFLICT_DESC') });
+
+        // 分类对比
+        const comparisonContainer = contentEl.createEl('div', { cls: 'category-comparison' });
+        
+        // 本地分类
+        const localContainer = comparisonContainer.createEl('div', { cls: 'category-option local' });
+        localContainer.createEl('h3', { text: t('LOCAL_CATEGORY') });
+        localContainer.createEl('div', { 
+            cls: 'category-name',
+            text: `${this.localCategoryName} (ID: ${this.localCategoryId})`
+        });
+
+        // 远程分类
+        const remoteContainer = comparisonContainer.createEl('div', { cls: 'category-option remote' });
+        remoteContainer.createEl('h3', { text: t('REMOTE_CATEGORY') });
+        remoteContainer.createEl('div', { 
+            cls: 'category-name',
+            text: `${this.remoteCategoryName} (ID: ${this.remoteCategoryId})`
+        });
+
+        // 按钮区域
+        const buttonArea = contentEl.createEl('div', { cls: 'button-area' });
+        
+        // 保持本地分类按钮
+        const keepLocalButton = buttonArea.createEl('button', {
+            cls: 'keep-local-button',
+            text: t('KEEP_LOCAL_CATEGORY')
+        });
+        keepLocalButton.onclick = () => {
+            this.resolve(false);
+            this.close();
+        };
+
+        // 使用远程分类按钮
+        const useRemoteButton = buttonArea.createEl('button', {
+            cls: 'use-remote-button',
+            text: t('USE_REMOTE_CATEGORY')
+        });
+        useRemoteButton.onclick = () => {
+            this.resolve(true);
+            this.close();
+        };
+    }
+
+    onClose() {
+        const { contentEl } = this;
+        contentEl.empty();
+        // 如果用户直接关闭对话框，默认保持本地设置
+        if (this.resolve) {
+            this.resolve(false);
+        }
+    }
 } 
