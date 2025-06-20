@@ -25,56 +25,11 @@ jobs:
           npm install
           npm run build
 
-      - name: Generate release notes
-        id: release_notes
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          tag="${GITHUB_REF#refs/tags/}"
-          
-          # 获取上一个标签
-          previous_tag=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
-          
-          # 生成发布说明
-          # 获取上一个标签
-          if [ -n "$previous_tag" ]; then
-            echo "## 🚀 更新内容 / What's Changed" > release_notes.md
-            echo "" >> release_notes.md
-            
-            # 分析提交类型并分类显示
-            echo "### ✨ 新增功能 / New Features:" >> release_notes.md
-            git log --pretty=format:"%s" "$previous_tag"..HEAD | grep -i "^feat\|^add\|^新增\|^功能" | sed 's/^/- /' >> release_notes.md || echo "- 暂无" >> release_notes.md
-            echo "" >> release_notes.md
-            
-            echo "### 🐛 问题修复 / Bug Fixes:" >> release_notes.md
-            git log --pretty=format:"%s" "$previous_tag"..HEAD | grep -i "^fix\|^bug\|^修复\|^修正" | sed 's/^/- /' >> release_notes.md || echo "- 暂无" >> release_notes.md
-            echo "" >> release_notes.md
-            
-            echo "### 🔧 改进优化 / Improvements:" >> release_notes.md
-            git log --pretty=format:"%s" "$previous_tag"..HEAD | grep -i "^improve\|^update\|^优化\|^改进\|^更新" | sed 's/^/- /' >> release_notes.md || echo "- 暂无" >> release_notes.md
-            echo "" >> release_notes.md
-            
-            echo "### 📝 所有提交 / All Commits:" >> release_notes.md
-            git log --pretty=format:"- %s ([%h](https://github.com/${{ github.repository }}/commit/%H))" "$previous_tag"..HEAD >> release_notes.md
-            echo "" >> release_notes.md
-            
-            echo "### 📂 变更文件 / Changed Files:" >> release_notes.md
-            git diff --name-only "$previous_tag"..HEAD | sed 's/^/- `/' | sed 's/$/`/' >> release_notes.md
-            
-            echo "" >> release_notes.md
-            echo "---" >> release_notes.md
-            echo "**完整变更日志**: https://github.com/${{ github.repository }}/compare/$previous_tag...$tag" >> release_notes.md
-          else
-            # 首次发布时使用 GitHub 自动生成的发布说明
-            echo "" > release_notes.md
-          fi
-
       - name: Create release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           tag="${GITHUB_REF#refs/tags/}"
-          previous_tag=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
           
           files=()
           for file in main.js manifest.json styles.css; do
@@ -86,16 +41,7 @@ jobs:
             fi
           done
 
-          if [ -n "$previous_tag" ]; then
-            # 有上一个标签，使用自定义发布说明
-            gh release create "$tag" \
-              --title="Release $tag" \
-              --notes-file release_notes.md \
-              "${files[@]}"
-          else
-            # 首次发布，使用 GitHub 自动生成的发布说明
-            gh release create "$tag" \
-              --title="Release $tag" \
-              --generate-notes \
-              "${files[@]}"
-          fi
+          gh release create "$tag" \
+            --title="$tag" \
+            --draft \
+            "${files[@]}"
