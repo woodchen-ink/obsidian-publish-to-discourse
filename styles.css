@@ -12,10 +12,11 @@ If your plugin does not need CSS, delete this file.
   max-width: 500px;
   max-height: 90vh;
   background-color: var(--background-primary);
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  border-radius: var(--radius-l);
+  box-shadow: var(--shadow-xl);
   display: flex;
   flex-direction: column;
+  border: 1px solid var(--background-modifier-border);
 }
 
 /* Content Area Style */
@@ -69,53 +70,80 @@ If your plugin does not need CSS, delete this file.
   width: 100%;
   padding: 8px 12px;
   border: 2px solid var(--background-modifier-border);
-  border-radius: 4px;
+  border-radius: var(--radius-s);
   background-color: var(--background-primary);
   color: var(--text-normal);
   font-size: 14px;
   min-height: 42px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .discourse-sync-modal select {
   height: 42px;
   line-height: 1.5;
+  cursor: pointer;
+}
+
+.discourse-sync-modal select:hover {
+  border-color: var(--background-modifier-border-hover);
 }
 
 .discourse-sync-modal select:focus {
-  border-color: var(--interactive-accent);
+  border-color: var(--interactive-accent) !important;
   outline: none;
+  box-shadow: 0 0 0 2px var(--interactive-accent-hover);
 }
 
 .discourse-sync-modal .submit-button {
   width: 100%;
   padding: 10px 16px;
-  background-color: var(--interactive-accent);
-  color: var(--text-on-accent);
-  border: none;
-  border-radius: 4px;
+  border-radius: var(--radius-m);
   cursor: pointer;
   font-weight: 500;
   font-size: 14px;
-  transition: background-color 0.2s ease;
+  transition: all 0.2s ease;
+  /* 确保按钮有合适的尺寸和阴影 */
+  min-height: 42px;
+  box-shadow: var(--shadow-s);
+}
+
+/* 确保按钮在所有主题下都可见 */
+.discourse-sync-modal .submit-button {
+  /* 强制设置具体的样式值，避免被主题覆盖 */
+  background-color: var(--interactive-accent) !important;
+  color: var(--text-on-accent) !important;
+  border: 1px solid var(--interactive-accent) !important;
+  /* 确保按钮有足够的对比度 */
+  filter: contrast(1.1) saturate(1.1);
 }
 
 .discourse-sync-modal .submit-button:hover {
-  background-color: var(--interactive-accent-hover);
+  background-color: var(--interactive-accent-hover) !important;
+  border-color: var(--interactive-accent-hover) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
 }
 
 .discourse-sync-modal .submit-button:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
+  background-color: var(--background-modifier-border) !important;
+  color: var(--text-muted) !important;
+  border-color: var(--background-modifier-border) !important;
+  opacity: 1 !important;
+  filter: none;
+  cursor: not-allowed !important;
 }
+
+/* 这些规则已经被上面的 !important 规则覆盖了，移除重复 */
 
 /* Notice Style */
 .discourse-sync-modal .notice {
   margin-top: 16px;
   padding: 16px;
-  border-radius: 8px;
+  border-radius: var(--radius-m);
   text-align: left;
   font-size: 14px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-s);
+  border: 1px solid var(--background-modifier-border);
+  transition: all 0.3s ease;
 }
 
 .discourse-sync-modal .notice.success {
@@ -126,16 +154,20 @@ If your plugin does not need CSS, delete this file.
 }
 
 .discourse-sync-modal .notice.error {
-  background: rgb(255, 235, 235);
-  border: 1px solid rgba(255, 82, 82, 0.2);
-  color: rgb(255, 82, 82);
+  /* 基础样式，会被 !important 规则覆盖 */
+}
+
+/* 确保错误通知在所有主题下都可见 */
+.discourse-sync-modal .notice.error {
+  background: var(--background-modifier-error) !important;
+  border: 1px solid var(--background-modifier-error-border) !important;
+  color: var(--text-error) !important;
 }
 
 .discourse-sync-modal .error-title {
   font-size: 15px;
   font-weight: 600;
   margin-bottom: 8px;
-  color: rgb(255, 82, 82);
   display: flex;
   align-items: center;
   gap: 6px;
@@ -147,28 +179,40 @@ If your plugin does not need CSS, delete this file.
 }
 
 .discourse-sync-modal .error-message {
-  color: rgb(255, 82, 82);
-  opacity: 0.8;
   font-size: 13px;
   line-height: 1.5;
+}
+
+/* 确保错误标题和消息在所有主题下都可见 */
+.discourse-sync-modal .error-title {
+  color: var(--text-error) !important;
+}
+
+.discourse-sync-modal .error-message {
+  color: var(--text-error) !important;
+  opacity: 0.9 !important;
 }
 
 .discourse-sync-modal .retry-button {
   margin-top: 12px;
   padding: 6px 16px;
   background-color: transparent;
-  color: rgb(255, 82, 82);
-  border: 1px solid rgb(255, 82, 82);
-  border-radius: 4px;
+  border-radius: var(--radius-s);
   cursor: pointer;
   font-size: 13px;
   font-weight: 500;
   transition: all 0.2s ease;
 }
 
+/* 确保重试按钮在所有主题下都可见 */
+.discourse-sync-modal .retry-button {
+  color: var(--text-error) !important;
+  border-color: var(--text-error) !important;
+}
+
 .discourse-sync-modal .retry-button:hover {
-  background-color: rgb(255, 82, 82);
-  color: white;
+  background-color: var(--text-error) !important;
+  color: var(--text-on-accent) !important;
 }
 
 /* Tag Select Area Style */
@@ -199,9 +243,16 @@ If your plugin does not need CSS, delete this file.
   padding: 4px 8px;
   background-color: var(--interactive-accent);
   color: var(--text-on-accent);
-  border-radius: 4px;
+  border-radius: var(--radius-s);
   font-size: 12px;
   font-weight: 500;
+  transition: all 0.2s ease;
+  border: 1px solid var(--interactive-accent);
+}
+
+.discourse-sync-modal .tag:hover {
+  background-color: var(--interactive-accent-hover);
+  border-color: var(--interactive-accent-hover);
 }
 
 .discourse-sync-modal .remove-tag {
@@ -213,12 +264,17 @@ If your plugin does not need CSS, delete this file.
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: var(--background-modifier-hover);
   margin-left: 4px;
+  transition: all 0.2s ease;
+  opacity: 0.7;
 }
 
 .discourse-sync-modal .remove-tag:hover {
-  background-color: rgba(255, 255, 255, 0.3);
+  background-color: var(--background-modifier-error);
+  color: var(--text-on-accent);
+  opacity: 1;
+  transform: scale(1.1);
 }
 
 .discourse-sync-modal input[type="text"] {
@@ -229,6 +285,17 @@ If your plugin does not need CSS, delete this file.
   color: var(--text-normal);
   font-size: 14px;
   outline: none;
+  transition: background-color 0.2s ease;
+}
+
+.discourse-sync-modal input[type="text"]:focus {
+  background-color: var(--background-modifier-hover);
+  border-radius: var(--radius-s);
+}
+
+.discourse-sync-modal input[type="text"]::placeholder {
+  color: var(--text-muted);
+  opacity: 0.8;
 }
 
 .discourse-sync-modal .suggestions-container {
@@ -248,13 +315,14 @@ If your plugin does not need CSS, delete this file.
   position: fixed;
   background-color: var(--background-primary);
   border: 1px solid var(--background-modifier-border);
-  border-radius: 4px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-radius: var(--radius-m);
+  box-shadow: var(--shadow-l);
   z-index: 1001;
   max-height: 180px;
   overflow-y: auto;
   margin-top: 4px;
   display: none;  /* Hidden by default */
+  backdrop-filter: blur(8px);
 }
 
 .discourse-sync-modal .tag-suggestions:not(:empty) {
@@ -273,28 +341,40 @@ If your plugin does not need CSS, delete this file.
   overflow: hidden;
   text-overflow: ellipsis;
   background-color: var(--background-primary);
+  transition: all 0.2s ease;
+  border-radius: var(--radius-s);
+  margin: 2px 4px;
 }
 
 .discourse-sync-modal .tag-suggestion:hover {
   background-color: var(--background-modifier-hover);
+  color: var(--text-accent);
+  transform: translateX(2px);
+}
+
+.discourse-sync-modal .tag-suggestion:active {
+  background-color: var(--interactive-accent);
+  color: var(--text-on-accent);
 }
 
 /* Tag Suggestion Scrollbar Style */
 .discourse-sync-modal .tag-suggestions::-webkit-scrollbar {
-  width: 4px;
+  width: 6px;
 }
 
 .discourse-sync-modal .tag-suggestions::-webkit-scrollbar-track {
-  background: transparent;
+  background: var(--background-secondary);
+  border-radius: var(--radius-s);
 }
 
 .discourse-sync-modal .tag-suggestions::-webkit-scrollbar-thumb {
   background-color: var(--background-modifier-border);
-  border-radius: 2px;
+  border-radius: var(--radius-s);
+  transition: background-color 0.2s ease;
 }
 
 .discourse-sync-modal .tag-suggestions::-webkit-scrollbar-thumb:hover {
-  background-color: var(--background-modifier-border-hover);
+  background-color: var(--interactive-accent);
 }
 
 /* Remove tag-container z-index to avoid interference */
@@ -308,9 +388,6 @@ If your plugin does not need CSS, delete this file.
   left: 50%;
   transform: translate(-50%, -50%);
   padding: 12px 20px;
-  background-color: rgb(255, 235, 235);
-  border: 1px solid rgba(255, 82, 82, 0.2);
-  color: rgb(255, 82, 82);
   border-radius: 4px;
   font-size: 13px;
   text-align: center;
@@ -320,6 +397,13 @@ If your plugin does not need CSS, delete this file.
   white-space: nowrap;
   opacity: 0;
   animation: fadeInOut 2s ease-in-out forwards;
+}
+
+/* 确保标签通知在所有主题下都可见 */
+.discourse-sync-modal .tag-notice {
+  background-color: var(--background-modifier-error) !important;
+  border: 1px solid var(--background-modifier-error-border) !important;
+  color: var(--text-error) !important;
 }
 
 @keyframes fadeInOut {
