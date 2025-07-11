@@ -5,6 +5,8 @@ export default {
 
     'SKIP_H1': '跳过一级标题',
     'SKIP_H1_DESC': '发布到 Discourse 时跳过笔记中的一级标题',
+    'USE_REMOTE_IMAGE_URL': '使用远程图片URL',
+    'USE_REMOTE_IMAGE_URL_DESC': '发布后用Discourse上的远程图片URL替换本地文章中的图片链接',
     'TEST_API_KEY': '测试连接',
     'TESTING': '测试中...',
     'API_TEST_SUCCESS': '连接成功！API密钥有效',
@@ -17,7 +19,7 @@ export default {
     'CATEGORY': '分类',
     'TAGS': '标签',
     'ENTER_TAG': '输入标签名称（回车添加）',
-    'ENTER_TAG_WITH_CREATE': '输入标签名称（可创建新标签）',
+    'ENTER_TAG_WITH_CREATE': '输入标签名称（回车添加）（可创建新标签）',
     'PUBLISHING': '发布中...',
     'UPDATING': '更新中...',
     'PUBLISH': '发布',

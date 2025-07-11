@@ -11,17 +11,30 @@ export class EmbedHandler {
 
     // 提取嵌入引用
     extractEmbedReferences(content: string): string[] {
-        const regex = /!\[\[(.*?)\]\]/g;
-        const matches = [];
+        const references: string[] = [];
+        
+        // 匹配 ![[...]] 格式 (Wiki格式)
+        const wikiRegex = /!\[\[(.*?)\]\]/g;
         let match;
-        while ((match = regex.exec(content)) !== null) {
-            matches.push(match[1]);
+        while ((match = wikiRegex.exec(content)) !== null) {
+            references.push(match[1]);
         }
-        return matches;
+        
+        // 匹配 ![](path) 格式 (Markdown格式)
+        const markdownRegex = /!\[.*?\]\(([^)]+)\)/g;
+        while ((match = markdownRegex.exec(content)) !== null) {
+            // 过滤掉网络URL，只处理本地文件路径
+            const path = match[1];
+            if (!path.startsWith('http://') && !path.startsWith('https://') && !path.startsWith('upload://')) {
+                references.push(path);
+            }
+        }
+        
+        return references;
     }
 
     // 处理嵌入内容
-    async processEmbeds(embedReferences: string[], activeFileName: string): Promise<string[]> {
+    async processEmbeds(embedReferences: string[], activeFileName: string, useRemoteUrl = false): Promise<string[]> {
         const uploadedUrls: string[] = [];
         for (const ref of embedReferences) {
             // 处理带有#的文件路径，分离文件名和标题部分
@@ -37,8 +50,14 @@ export class EmbedHandler {
                 if (abstractFile instanceof TFile) {
                     // 检查是否为图片或PDF文件
                     if (isImageFile(abstractFile)) {
-                        const imageUrl = await this.api.uploadImage(abstractFile);
-                        uploadedUrls.push(imageUrl || "");
+                        const imageResult = await this.api.uploadImage(abstractFile);
+                        if (imageResult) {
+                            // 根据配置选择使用短URL还是完整URL
+                            const urlToUse = useRemoteUrl && imageResult.fullUrl ? imageResult.fullUrl : imageResult.shortUrl;
+                            uploadedUrls.push(urlToUse);
+                        } else {
+                            uploadedUrls.push("");
+                        }
                     } else {
                         // 非图片文件，返回空字符串
                         uploadedUrls.push("");
@@ -58,14 +77,23 @@ export class EmbedHandler {
     // 替换内容中的嵌入引用为Markdown格式
     replaceEmbedReferences(content: string, embedReferences: string[], uploadedUrls: string[]): string {
         let processedContent = content;
+        
         embedReferences.forEach((ref, index) => {
-            const obsRef = `![[${ref}]]`;
-            // 只有当上传URL不为空时（即为图片）才替换为Markdown格式的图片链接
             if (uploadedUrls[index]) {
-                const discoRef = `![${ref}](${uploadedUrls[index]})`;
-                processedContent = processedContent.replace(obsRef, discoRef);
+                // 处理 ![[...]] 格式 (Wiki格式)
+                const wikiRef = `![[${ref}]]`;
+                const wikiReplacement = `![${ref}](${uploadedUrls[index]})`;
+                processedContent = processedContent.replace(wikiRef, wikiReplacement);
+                
+                // 处理 ![](path) 格式 (Markdown格式)
+                // 创建正则表达式来匹配具体的路径
+                const escapedRef = ref.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                const markdownRegex = new RegExp(`!\\[([^\\]]*)\\]\\(${escapedRef}\\)`, 'g');
+                const markdownReplacement = `![$1](${uploadedUrls[index]})`;
+                processedContent = processedContent.replace(markdownRegex, markdownReplacement);
             }
         });
+        
         return processedContent;
     }
 } 

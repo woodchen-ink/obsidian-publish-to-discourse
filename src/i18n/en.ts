@@ -5,6 +5,8 @@ export default {
 
     'SKIP_H1': 'Skip First Heading',
     'SKIP_H1_DESC': 'Skip the first heading (H1) when publishing to Discourse',
+    'USE_REMOTE_IMAGE_URL': 'Use Remote Image URLs',
+    'USE_REMOTE_IMAGE_URL_DESC': 'Replace local image links with remote URLs from Discourse after publishing',
     'TEST_API_KEY': 'Test Connection',
     'TESTING': 'Testing...',
     'API_TEST_SUCCESS': 'Connection successful! API key is valid',
@@ -17,7 +19,7 @@ export default {
     'CATEGORY': 'Category',
     'TAGS': 'Tags',
     'ENTER_TAG': 'Enter tag name (press Enter to add)',
-    'ENTER_TAG_WITH_CREATE': 'Enter tag name (can create new tags)',
+    'ENTER_TAG_WITH_CREATE': 'Enter tag name (press Enter to add) (can create new tags)',
     'PUBLISHING': 'Publishing...',
     'UPDATING': 'Updating...',
     'PUBLISH': 'Publish',

@@ -6,6 +6,7 @@ export interface DiscourseSyncSettings {
 	baseUrl: string;
 	category: number;
 	skipH1: boolean;
+	useRemoteImageUrl: boolean;
 	userApiKey: string;
 	lastNotifiedVersion?: string; // 记录上次显示更新通知的版本
 }
@@ -14,6 +15,7 @@ export const DEFAULT_SETTINGS: DiscourseSyncSettings = {
 	baseUrl: "https://yourforum.example.com",
 	category: 1,
 	skipH1: false,
+	useRemoteImageUrl: false,
 	userApiKey: ""
 };
 
@@ -227,6 +229,18 @@ export class DiscourseSyncSettingsTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.skipH1)
 					.onChange(async (value) => {
 						this.plugin.settings.skipH1 = value;
+						await this.plugin.saveSettings();
+					})
+			);
+
+		new Setting(publishSection)
+			.setName(t('USE_REMOTE_IMAGE_URL'))
+			.setDesc(t('USE_REMOTE_IMAGE_URL_DESC'))
+			.addToggle((toggle) => 
+				toggle
+					.setValue(this.plugin.settings.useRemoteImageUrl)
+					.onChange(async (value) => {
+						this.plugin.settings.useRemoteImageUrl = value;
 						await this.plugin.saveSettings();
 					})
 			);

@@ -239,7 +239,7 @@ export default class PublishToDiscourse extends Plugin implements PluginInterfac
 		const embedReferences = this.embedHandler.extractEmbedReferences(content);
 		
 		// 处理嵌入内容
-		const uploadedUrls = await this.embedHandler.processEmbeds(embedReferences, this.activeFile.name);
+		const uploadedUrls = await this.embedHandler.processEmbeds(embedReferences, this.activeFile.name, this.settings.useRemoteImageUrl);
 		
 		// 替换嵌入引用为Markdown格式
 		content = this.embedHandler.replaceEmbedReferences(content, embedReferences, uploadedUrls);
@@ -276,6 +276,11 @@ export default class PublishToDiscourse extends Plugin implements PluginInterfac
 				// 如果更新成功，更新Front Matter
 				if (result.success) {
 					await this.updateFrontMatter(postId, topicId, currentTags);
+					
+					// 如果启用了远程URL替换，更新本地文件中的图片链接
+					if (this.settings.useRemoteImageUrl) {
+						await this.updateLocalImageLinks(embedReferences, uploadedUrls);
+					}
 				}
 			} else {
 				// 创建新帖子
@@ -289,6 +294,11 @@ export default class PublishToDiscourse extends Plugin implements PluginInterfac
 				// 如果创建成功，更新Front Matter
 				if (result.success && result.postId && result.topicId) {
 					await this.updateFrontMatter(result.postId, result.topicId, currentTags);
+					
+					// 如果启用了远程URL替换，更新本地文件中的图片链接
+					if (this.settings.useRemoteImageUrl) {
+						await this.updateLocalImageLinks(embedReferences, uploadedUrls);
+					}
 				}
 			}
 			
@@ -359,6 +369,47 @@ export default class PublishToDiscourse extends Plugin implements PluginInterfac
 			};
 		} catch (error) {
 			new NotifyUser(this.app, t('UPDATE_FAILED')).open();
+		}
+	}
+
+	// 更新本地文件中的图片链接为远程URL
+	private async updateLocalImageLinks(embedReferences: string[], uploadedUrls: string[]) {
+		try {
+			const activeFile = this.app.workspace.getActiveFile();
+			if (!activeFile) {
+				return;
+			}
+
+			let content = await this.app.vault.read(activeFile);
+			let hasChanges = false;
+
+			embedReferences.forEach((ref, index) => {
+				if (uploadedUrls[index]) {
+					// 替换 ![[...]] 格式 (Wiki格式)
+					const wikiRef = `![[${ref}]]`;
+					const wikiReplacement = `![${ref}](${uploadedUrls[index]})`;
+					if (content.includes(wikiRef)) {
+						content = content.replace(wikiRef, wikiReplacement);
+						hasChanges = true;
+					}
+					
+					// 替换 ![](path) 格式 (Markdown格式)
+					const escapedRef = ref.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+					const markdownRegex = new RegExp(`!\\[([^\\]]*)\\]\\(${escapedRef}\\)`, 'g');
+					const markdownReplacement = `![$1](${uploadedUrls[index]})`;
+					if (markdownRegex.test(content)) {
+						content = content.replace(markdownRegex, markdownReplacement);
+						hasChanges = true;
+					}
+				}
+			});
+
+			// 只有在有变更时才保存文件
+			if (hasChanges) {
+				await this.app.vault.modify(activeFile, content);
+			}
+		} catch (error) {
+			console.error('Failed to update local image links:', error);
 		}
 	}
 

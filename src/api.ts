@@ -15,7 +15,7 @@ export class DiscourseAPI {
     ) {}
 
     // 上传图片到Discourse
-    async uploadImage(file: TFile): Promise<string | null> {
+    async uploadImage(file: TFile): Promise<{shortUrl: string, fullUrl?: string} | null> {
         try {
             const imgfile = await this.app.vault.readBinary(file);
             const boundary = genBoundary();
@@ -53,7 +53,25 @@ export class DiscourseAPI {
 
             if (response.status == 200) {
                 const jsonResponse = response.json;
-                return jsonResponse.short_url;
+                let fullUrl: string | undefined;
+                
+                // 处理完整URL的拼接
+                if (jsonResponse.url) {
+                    // 如果返回的url已经是完整URL（包含http/https），直接使用
+                    if (jsonResponse.url.startsWith('http://') || jsonResponse.url.startsWith('https://')) {
+                        fullUrl = jsonResponse.url;
+                    } else {
+                        // 如果是相对路径，需要与baseUrl拼接
+                        const baseUrl = this.settings.baseUrl.replace(/\/$/, ''); // 移除尾部斜杠
+                        const urlPath = jsonResponse.url.startsWith('/') ? jsonResponse.url : `/${jsonResponse.url}`;
+                        fullUrl = `${baseUrl}${urlPath}`;
+                    }
+                }
+                
+                return {
+                    shortUrl: jsonResponse.short_url,
+                    fullUrl: fullUrl
+                };
             } else {
                 new NotifyUser(this.app, `Error uploading image: ${response.status}`).open();
                 return null;
