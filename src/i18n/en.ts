@@ -88,11 +88,5 @@ export default {
     'USER_API_KEY_DESC': 'Current configured User-API-Key (read-only)',
     'USER_API_KEY_EMPTY': 'Please use the process below to obtain one',
     'COPY_API_KEY': 'Copy',
-    'API_KEY_COPIED': '✅ API Key copied to clipboard',
-
-    // Version update notice
-    'UPDATE_NOTICE_TITLE': '🔄 Plugin Updated - Reconfiguration Required',
-    'UPDATE_NOTICE_MESSAGE': 'Due to major changes in authentication method, you need to reconfigure your User-API-Key. The old API Key and username method has been removed. Please go to settings to reconfigure.',
-    'UPDATE_NOTICE_BUTTON': 'Go to Settings',
-    'UPDATE_NOTICE_DISMISS': 'I understand'
+    'API_KEY_COPIED': '✅ API Key copied to clipboard'
 } 

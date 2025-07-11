@@ -5,7 +5,7 @@ import { t, setLocale } from './i18n';
 import { expandEmbeds } from './expand-embeds';
 import { DiscourseAPI } from './api';
 import { EmbedHandler } from './embed-handler';
-import { SelectCategoryModal, CategoryConflictModal, UpdateNoticeModal } from './ui';
+import { SelectCategoryModal, CategoryConflictModal } from './ui';
 import { NotifyUser } from './notification';
 import { getFrontMatter, removeFrontMatter } from './utils';
 import { ActiveFile, PluginInterface } from './types';
@@ -29,9 +29,6 @@ export default class PublishToDiscourse extends Plugin implements PluginInterfac
 
 		// 加载设置
 		await this.loadSettings();
-		
-		// 检查是否需要显示更新通知
-		await this.checkForUpdateNotice();
 		
 		// 初始化API和嵌入处理器
 		this.api = new DiscourseAPI(this.app, this.settings);
@@ -72,29 +69,6 @@ export default class PublishToDiscourse extends Plugin implements PluginInterfac
 
 	async saveSettings() {
 		await this.saveData(this.settings);
-	}
-
-	// 检查是否需要显示更新通知
-	private async checkForUpdateNotice() {
-		const currentVersion = this.manifest.version;
-		const lastNotifiedVersion = this.settings.lastNotifiedVersion;
-		
-		// 如果是首次运行当前版本，显示更新通知
-		if (lastNotifiedVersion !== currentVersion) {
-			// 延迟显示，确保界面已完全加载
-			setTimeout(() => {
-				const modal = new UpdateNoticeModal(this.app, this, () => {
-					// 打开设置页面
-					(this.app as any).setting.open();
-					(this.app as any).setting.openTabById(this.manifest.id);
-				});
-				modal.open();
-			}, 1000);
-			
-			// 更新记录的版本
-			this.settings.lastNotifiedVersion = currentVersion;
-			await this.saveSettings();
-		}
 	}
 
 	// 注册目录菜单
