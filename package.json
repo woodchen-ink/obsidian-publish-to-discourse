@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-publish-to-discourse",
-	"version": "1.0.21",
+	"version": "1.0.22",
 	"description": "Post notes to the Discourse forum.",
 	"main": "main.js",
 	"scripts": {
