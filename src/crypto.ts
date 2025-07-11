@@ -1,6 +1,7 @@
 // 类型声明修正
 // @ts-ignore
 import forge from 'node-forge';
+import { t } from './i18n';
 
 const KEY_STORAGE = 'discourse_user_api_keypair';
 
@@ -39,12 +40,12 @@ export function clearKeyPair() {
 // 解密payload，校验nonce，返回user-api-key
 export async function decryptUserApiKey(payload: string): Promise<string> {
   const pair = loadKeyPair();
-  if (!pair) throw new Error('请先生成密钥对');
+  if (!pair) throw new Error(t('CRYPTO_NEED_GEN_KEYPAIR'));
   const privateKey = forge.pki.privateKeyFromPem(pair.privateKeyPem);
   const encryptedBytes = forge.util.decode64(payload.trim().replace(/\s/g, ''));
   const decrypted = privateKey.decrypt(encryptedBytes, 'RSAES-PKCS1-V1_5');
   const json = JSON.parse(decrypted);
-  if (!json.key) throw new Error('payload内容无key字段');
-  if (json.nonce !== pair.nonce) throw new Error('nonce校验失败');
+  if (!json.key) throw new Error(t('CRYPTO_PAYLOAD_NO_KEY'));
+  if (json.nonce !== pair.nonce) throw new Error(t('CRYPTO_NONCE_INVALID'));
   return json.key;
 } 

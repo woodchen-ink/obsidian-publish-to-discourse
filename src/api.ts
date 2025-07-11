@@ -38,16 +38,10 @@ export class DiscourseAPI {
             formDataArray.set(endBoundaryArray, imgFormArray.length + bodyArray.length + imgfile.byteLength);
 
             const url = `${this.settings.baseUrl}/uploads.json`;
-            const headers: Record<string, string> = this.settings.userApiKey
-                ? {
-                    "User-Api-Key": this.settings.userApiKey,
-                    "Content-Type": `multipart/form-data; boundary=${boundary}`
-                  }
-                : {
-                    "Api-Key": this.settings.apiKey || '',
-                    "Api-Username": this.settings.disUser || '',
-                    "Content-Type": `multipart/form-data; boundary=${boundary}`
-                  };
+            const headers: Record<string, string> = {
+                "User-Api-Key": this.settings.userApiKey,
+                "Content-Type": `multipart/form-data; boundary=${boundary}`
+            };
 
             const response = await requestUrl({
                 url: url,
@@ -73,16 +67,10 @@ export class DiscourseAPI {
     // 创建新帖子
     async createPost(title: string, content: string, category: number, tags: string[]): Promise<{ success: boolean; postId?: number; topicId?: number; error?: string }> {
         const url = `${this.settings.baseUrl}/posts.json`;
-        const headers: Record<string, string> = this.settings.userApiKey
-            ? {
-                "User-Api-Key": this.settings.userApiKey,
-                "Content-Type": "application/json"
-              }
-            : {
-                "Content-Type": "application/json",
-                "Api-Key": this.settings.apiKey || '',
-                "Api-Username": this.settings.disUser || ''
-              };
+        const headers: Record<string, string> = {
+            "User-Api-Key": this.settings.userApiKey,
+            "Content-Type": "application/json"
+        };
 
         try {
             const response = await requestUrl({
@@ -151,16 +139,10 @@ export class DiscourseAPI {
     async updatePost(postId: number, topicId: number, title: string, content: string, category: number, tags: string[]): Promise<{ success: boolean; error?: string }> {
         const postEndpoint = `${this.settings.baseUrl}/posts/${postId}`;
         const topicEndpoint = `${this.settings.baseUrl}/t/${topicId}`;
-        const headers: Record<string, string> = this.settings.userApiKey
-            ? {
-                "User-Api-Key": this.settings.userApiKey,
-                "Content-Type": "application/json"
-              }
-            : {
-                "Content-Type": "application/json",
-                "Api-Key": this.settings.apiKey || '',
-                "Api-Username": this.settings.disUser || ''
-              };
+        const headers: Record<string, string> = {
+            "User-Api-Key": this.settings.userApiKey,
+            "Content-Type": "application/json"
+        };
         
         try {
             // 首先更新帖子内容
@@ -237,9 +219,9 @@ export class DiscourseAPI {
     async fetchCategories(): Promise<{ id: number; name: string }[]> {
         try {
             const url = `${this.settings.baseUrl}/categories.json?include_subcategories=true`;
-            const headers: Record<string, string> = this.settings.userApiKey
-                ? { "User-Api-Key": this.settings.userApiKey }
-                : { "Api-Key": this.settings.apiKey || '', "Api-Username": this.settings.disUser || '' };
+            const headers: Record<string, string> = {
+                "User-Api-Key": this.settings.userApiKey
+            };
             
             const response = await requestUrl({
                 url,
@@ -286,9 +268,9 @@ export class DiscourseAPI {
     async fetchTags(): Promise<{ name: string; canCreate: boolean }[]> {
         try {
             const url = `${this.settings.baseUrl}/tags.json`;
-            const headers: Record<string, string> = this.settings.userApiKey
-                ? { "User-Api-Key": this.settings.userApiKey }
-                : { "Api-Key": this.settings.apiKey || '', "Api-Username": this.settings.disUser || '' };
+            const headers: Record<string, string> = {
+                "User-Api-Key": this.settings.userApiKey
+            };
             
             const response = await requestUrl({
                 url,
@@ -326,9 +308,9 @@ export class DiscourseAPI {
     async checkCanCreateTags(): Promise<boolean> {
         try {
             const url = `${this.settings.baseUrl}/site.json`;
-            const headers: Record<string, string> = this.settings.userApiKey
-                ? { "User-Api-Key": this.settings.userApiKey }
-                : { "Api-Key": this.settings.apiKey || '', "Api-Username": this.settings.disUser || '' };
+            const headers: Record<string, string> = {
+                "User-Api-Key": this.settings.userApiKey
+            };
             
             const response = await requestUrl({
                 url,
@@ -352,7 +334,7 @@ export class DiscourseAPI {
 
     // 测试API密钥
     async testApiKey(): Promise<{ success: boolean; message: string }> {
-        if (!this.settings.baseUrl || (!this.settings.apiKey && !this.settings.userApiKey) || !this.settings.disUser) {
+        if (!this.settings.baseUrl || !this.settings.userApiKey) {
             return {
                 success: false,
                 message: t('MISSING_SETTINGS')
@@ -360,10 +342,10 @@ export class DiscourseAPI {
         }
         
         try {
-            const url = `${this.settings.baseUrl}/users/${this.settings.disUser}.json`;
-            const headers: Record<string, string> = this.settings.userApiKey
-                ? { "User-Api-Key": this.settings.userApiKey }
-                : { "Api-Key": this.settings.apiKey || '', "Api-Username": this.settings.disUser || '' };
+            const url = `${this.settings.baseUrl}/site.json`;
+            const headers: Record<string, string> = {
+                "User-Api-Key": this.settings.userApiKey
+            };
             
             const response = await requestUrl({
                 url,
@@ -374,7 +356,7 @@ export class DiscourseAPI {
             
             if (response.status === 200) {
                 const data = response.json;
-                if (data && data.user) {
+                if (data) {
                     return {
                         success: true,
                         message: t('API_TEST_SUCCESS')
@@ -403,9 +385,9 @@ export class DiscourseAPI {
     async fetchTopicInfo(topicId: number): Promise<{ tags: string[], categoryId?: number }> {
         try {
             const url = `${this.settings.baseUrl}/t/${topicId}.json`;
-            const headers: Record<string, string> = this.settings.userApiKey
-                ? { "User-Api-Key": this.settings.userApiKey }
-                : { "Api-Key": this.settings.apiKey || '', "Api-Username": this.settings.disUser || '' };
+            const headers: Record<string, string> = {
+                "User-Api-Key": this.settings.userApiKey
+            };
             
             const response = await requestUrl({
                 url,

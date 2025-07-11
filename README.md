@@ -1,9 +1,9 @@
 # Publish to Discourse
 
-## 配置key
+## 配置User Api key
 
-下载插件, 在设置页面添加"论坛地址", "API密钥(需要管理员创建)", "用户名".
-![image](https://github.com/user-attachments/assets/6c75ebb6-d028-4055-9616-2fb2931932ff)
+下载插件, 在设置页面添加"论坛地址"后配置.
+![image](/pics/20250711-233019.gif)
 
 
 

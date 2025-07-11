@@ -1,4 +1,4 @@
-import { App, Modal } from 'obsidian';
+import { App, Modal, Notice } from 'obsidian';
 import { t } from './i18n';
 import { PluginInterface } from './types';
 
@@ -158,13 +158,7 @@ export class SelectCategoryModal extends Modal {
                         updateSelectedTags();
                     } else {
                         // 显示权限提示
-                        const notice = contentEl.createEl('div', {
-                            cls: 'tag-notice',
-                            text: t('PERMISSION_ERROR')
-                        });
-                        setTimeout(() => {
-                            notice.remove();
-                        }, 2000);
+                        new Notice(t('PERMISSION_ERROR'), 3000);
                     }
                 }
                 tagInput.value = '';
@@ -205,9 +199,6 @@ export class SelectCategoryModal extends Modal {
             cls: 'submit-button'
         });
         
-        // 创建通知容器
-        const noticeContainer = buttonArea.createEl('div', { cls: 'notice-container' });
-        
         submitButton.onclick = async () => {
             // 保存当前选择的标签到activeFile对象
             this.plugin.activeFile.tags = Array.from(selectedTags);
@@ -220,68 +211,33 @@ export class SelectCategoryModal extends Modal {
                 // 发布主题
                 const result = await this.plugin.publishTopic();
                 
-                // 显示结果
-                noticeContainer.empty();
-                
                 if (result.success) {
                     // 成功
-                    noticeContainer.createEl('div', { 
-                        cls: 'notice success',
-                        text: isUpdate ? t('UPDATE_SUCCESS') : t('PUBLISH_SUCCESS')
-                    });
+                    new Notice(isUpdate ? t('UPDATE_SUCCESS') : t('PUBLISH_SUCCESS'), 5000);
                     
                     // 2秒后自动关闭
                     setTimeout(() => {
                         this.close();
                     }, 2000);
                 } else {
-                    // 失败
-                    const errorContainer = noticeContainer.createEl('div', { cls: 'notice error' });
-                    errorContainer.createEl('div', { 
-                        cls: 'error-title',
-                        text: isUpdate ? t('UPDATE_ERROR') : t('PUBLISH_ERROR')
-                    });
+                    // 失败 - 使用 Obsidian 原生 Notice
+                    const errorMessage = (isUpdate ? t('UPDATE_ERROR') : t('PUBLISH_ERROR')) + 
+                                       '\n' + (result.error || t('UNKNOWN_ERROR'));
+                    new Notice(errorMessage, 8000);
                     
-                    errorContainer.createEl('div', { 
-                        cls: 'error-message',
-                        text: result.error || t('UNKNOWN_ERROR')
-                    });
-                    
-                    // 添加重试按钮
-                    const retryButton = errorContainer.createEl('button', {
-                        cls: 'retry-button',
-                        text: t('RETRY')
-                    });
-                    retryButton.onclick = () => {
-                        noticeContainer.empty();
-                        submitButton.disabled = false;
-                        submitButton.textContent = isUpdate ? t('UPDATE') : t('PUBLISH');
-                    };
-                }
-            } catch (error) {
-                // 显示错误
-                noticeContainer.empty();
-                const errorContainer = noticeContainer.createEl('div', { cls: 'notice error' });
-                errorContainer.createEl('div', { 
-                    cls: 'error-title',
-                    text: isUpdate ? t('UPDATE_ERROR') : t('PUBLISH_ERROR')
-                });
-                
-                errorContainer.createEl('div', { 
-                    cls: 'error-message',
-                    text: error.message || t('UNKNOWN_ERROR')
-                });
-                
-                // 添加重试按钮
-                const retryButton = errorContainer.createEl('button', {
-                    cls: 'retry-button',
-                    text: t('RETRY')
-                });
-                retryButton.onclick = () => {
-                    noticeContainer.empty();
+                    // 重置按钮状态
                     submitButton.disabled = false;
                     submitButton.textContent = isUpdate ? t('UPDATE') : t('PUBLISH');
-                };
+                }
+            } catch (error) {
+                // 显示错误 - 使用 Obsidian 原生 Notice
+                const errorMessage = (isUpdate ? t('UPDATE_ERROR') : t('PUBLISH_ERROR')) + 
+                                   '\n' + (error.message || t('UNKNOWN_ERROR'));
+                new Notice(errorMessage, 8000);
+                
+                // 重置按钮状态
+                submitButton.disabled = false;
+                submitButton.textContent = isUpdate ? t('UPDATE') : t('PUBLISH');
             }
         };
     }

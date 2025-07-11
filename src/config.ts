@@ -4,20 +4,16 @@ import { t } from './i18n';
 
 export interface DiscourseSyncSettings {
 	baseUrl: string;
-	apiKey: string;
-	disUser: string;
 	category: number;
 	skipH1: boolean;
-	userApiKey?: string; // 新增
+	userApiKey: string;
 }
 
 export const DEFAULT_SETTINGS: DiscourseSyncSettings = {
 	baseUrl: "https://yourforum.example.com",
-	apiKey: "apikey",
-	disUser: "DiscourseUsername",
 	category: 1,
 	skipH1: false,
-	userApiKey: "" // 新增
+	userApiKey: ""
 };
 
 export class DiscourseSyncSettingsTab extends PluginSettingTab {
@@ -30,7 +26,15 @@ export class DiscourseSyncSettingsTab extends PluginSettingTab {
 		const { containerEl } = this;
 		containerEl.empty();
 
-		new Setting(containerEl)
+		// ====== 基础配置 ======
+		const basicSection = containerEl.createDiv('discourse-config-section');
+		basicSection.createEl('h2', { text: '🔧 ' + t('CONFIG_BASIC_TITLE') });
+		basicSection.createEl('p', { 
+			text: t('CONFIG_BASIC_DESC'),
+			cls: 'setting-item-description'
+		});
+
+		new Setting(basicSection)
 			.setName(t('FORUM_URL'))
 			.setDesc(t('FORUM_URL_DESC'))
 			.addText((text) =>
@@ -43,33 +47,178 @@ export class DiscourseSyncSettingsTab extends PluginSettingTab {
 					})
 		);
 
-		new Setting(containerEl)
-			.setName(t('API_KEY'))
-			.setDesc(t('API_KEY_DESC'))
-			.addText((text) =>
+		// 显示当前的 User-API-Key
+		const userApiKey = this.plugin.settings.userApiKey;
+		const hasApiKey = userApiKey && userApiKey.trim() !== '';
+		
+		new Setting(basicSection)
+			.setName(t('USER_API_KEY'))
+			.setDesc(hasApiKey ? t('USER_API_KEY_DESC') : t('USER_API_KEY_EMPTY'))
+			.addText((text) => {
 				text
-					.setPlaceholder("api_key")
-					.setValue(this.plugin.settings.apiKey)
-					.onChange(async (value) => {
-						this.plugin.settings.apiKey = value;
-						await this.plugin.saveSettings();
-					})
-		);
+					.setPlaceholder(hasApiKey ? "••••••••••••••••••••••••••••••••" : t('USER_API_KEY_EMPTY'))
+					.setValue(hasApiKey ? userApiKey : "")
+					.setDisabled(true);
+				
+				// 设置样式让文本看起来像密码
+				if (hasApiKey) {
+					text.inputEl.style.fontFamily = 'monospace';
+					text.inputEl.style.fontSize = '12px';
+					text.inputEl.style.color = 'var(--text-muted)';
+				}
+			})
+			.addButton((button: ButtonComponent) => {
+				if (hasApiKey) {
+					button
+						.setButtonText("📋 " + t('COPY_API_KEY'))
+						.setTooltip(t('COPY_API_KEY'))
+						.onClick(async () => {
+							try {
+								await navigator.clipboard.writeText(userApiKey);
+								new Notice(t('API_KEY_COPIED'), 3000);
+							} catch (error) {
+								// 降级方案：使用传统的复制方法
+								const textArea = document.createElement('textarea');
+								textArea.value = userApiKey;
+								document.body.appendChild(textArea);
+								textArea.select();
+								document.execCommand('copy');
+								document.body.removeChild(textArea);
+								new Notice(t('API_KEY_COPIED'), 3000);
+							}
+						});
+				} else {
+					button
+						.setButtonText("⬇️ 获取")
+						.setTooltip("跳转到获取 API Key 的流程")
+						.onClick(() => {
+							// 滚动到 API Key 获取区域
+							const apiSection = containerEl.querySelector('.discourse-config-section:nth-child(2)');
+							if (apiSection) {
+								apiSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+							}
+						});
+				}
+			});
 
-		new Setting(containerEl)
-			.setName(t('USERNAME'))
-			.setDesc(t('USERNAME_DESC'))
-			.addText((text) =>
-				text
-					.setPlaceholder("username")
-					.setValue(this.plugin.settings.disUser)
-					.onChange(async (value) => {
-						this.plugin.settings.disUser = value;
-						await this.plugin.saveSettings();
-					}),
-		);
+		// ====== 获取 User-API-Key ======
+		const apiSection = containerEl.createDiv('discourse-config-section');
+		apiSection.createEl('h2', { text: '🔑 ' + t('CONFIG_API_TITLE') });
+		apiSection.createEl('p', { 
+			text: t('CONFIG_API_DESC'),
+			cls: 'setting-item-description'
+		});
 
-		new Setting(containerEl)
+		// 步骤 1: 确认论坛地址
+		const step1 = apiSection.createDiv('discourse-step');
+		step1.createDiv('discourse-step-title').textContent = t('STEP_VERIFY_URL');
+		step1.createDiv('discourse-step-description').textContent = t('STEP_VERIFY_URL_DESC');
+
+		// 步骤 2: 生成授权链接
+		const step2 = apiSection.createDiv('discourse-step');
+		step2.createDiv('discourse-step-title').textContent = t('STEP_GENERATE_AUTH');
+		step2.createDiv('discourse-step-description').textContent = t('STEP_GENERATE_AUTH_DESC');
+		
+		new Setting(step2)
+			.setName(t('GENERATE_AUTH_LINK'))
+			.setDesc(t('GENERATE_AUTH_DESC'))
+			.addButton((button: ButtonComponent) => {
+				button.setButtonText("🚀 " + t('GENERATE_AUTH_LINK'));
+				button.onClick(async () => {
+					const { generateKeyPairAndNonce, saveKeyPair } = await import("./crypto");
+					const pair = generateKeyPairAndNonce();
+					saveKeyPair(pair);
+					const url = `${this.plugin.settings.baseUrl.replace(/\/$/,"")}/user-api-key/new?` +
+						`application_name=Obsidian%20Discourse%20Plugin&client_id=obsidian-${Date.now()}&scopes=read,write&public_key=${encodeURIComponent(pair.publicKeyPem)}&nonce=${pair.nonce}`;
+					window.open(url, '_blank');
+					new Notice(t('AUTH_LINK_GENERATED'), 8000);
+					this.display();
+				});
+			});
+
+		// 步骤 3: 完成授权并复制 Payload
+		const step3 = apiSection.createDiv('discourse-step');
+		step3.createDiv('discourse-step-title').textContent = t('STEP_AUTHORIZE');
+		step3.createDiv('discourse-step-description').textContent = t('STEP_AUTHORIZE_DESC');
+
+		// 步骤 4: 解密并保存 User-API-Key
+		const step4 = apiSection.createDiv('discourse-step');
+		step4.createDiv('discourse-step-title').textContent = t('STEP_DECRYPT');
+		step4.createDiv('discourse-step-description').textContent = t('STEP_DECRYPT_DESC');
+		
+		new Setting(step4)
+			.setName(t('DECRYPT_PAYLOAD'))
+			.setDesc(t('DECRYPT_PAYLOAD_DESC'))
+			.addText((text) => {
+				text.setPlaceholder(t('PAYLOAD_PLACEHOLDER'));
+				text.inputEl.style.width = '80%';
+				(text as any).payloadValue = '';
+				text.onChange((value) => {
+					(text as any).payloadValue = value;
+				});
+			})
+			.addButton((button: ButtonComponent) => {
+				button.setButtonText("🔓 " + t('DECRYPT_AND_SAVE'));
+				button.onClick(async () => {
+					const { decryptUserApiKey, clearKeyPair } = await import("./crypto");
+					const payload = (containerEl.querySelector(`input[placeholder="${t('PAYLOAD_PLACEHOLDER')}"]`) as HTMLInputElement)?.value;
+					if (!payload) { new Notice("请先粘贴payload"); return; }
+					try {
+						const userApiKey = await decryptUserApiKey(payload);
+						this.plugin.settings.userApiKey = userApiKey;
+						await this.plugin.saveSettings();
+						clearKeyPair();
+						new Notice(t('DECRYPT_SUCCESS'), 5000);
+						this.display();
+					} catch (e) {
+						new Notice(t('DECRYPT_FAILED') + e, 8000);
+					}
+				});
+			});
+
+		// 步骤 5: 测试连接
+		const step5 = apiSection.createDiv('discourse-step');
+		step5.createDiv('discourse-step-title').textContent = t('STEP_TEST');
+		step5.createDiv('discourse-step-description').textContent = t('STEP_TEST_DESC');
+		
+		new Setting(step5)
+			.setName(t('TEST_API_KEY'))
+			.setDesc(t('STEP_TEST_DESC'))
+			.addButton((button: ButtonComponent) => {
+				button
+					.setButtonText("🔍 " + t('TEST_API_KEY'))
+					.setCta()
+					.onClick(async () => {
+						button.setButtonText("🔄 " + t('TESTING'));
+						button.setDisabled(true);
+						
+						const result = await this.plugin.api.testApiKey();
+						
+						button.setButtonText("🔍 " + t('TEST_API_KEY'));
+						button.setDisabled(false);
+						
+						if (result.success) {
+							new Notice("✅ " + result.message, 5000);
+						} else {
+							// 使用 Obsidian 的默认 Notice 进行错误提示
+							const formattedMessage = typeof result.message === 'string' 
+								? result.message 
+								: JSON.stringify(result.message, null, 2);
+							
+							new Notice("❌ " + t('API_TEST_FAILED') + "\n" + formattedMessage, 8000);
+						}
+					});
+			});
+
+		// ====== 发布选项 ======
+		const publishSection = containerEl.createDiv('discourse-config-section');
+		publishSection.createEl('h2', { text: '📝 ' + t('CONFIG_PUBLISH_TITLE') });
+		publishSection.createEl('p', { 
+			text: t('CONFIG_PUBLISH_DESC'),
+			cls: 'setting-item-description'
+		});
+
+		new Setting(publishSection)
 			.setName(t('SKIP_H1'))
 			.setDesc(t('SKIP_H1_DESC'))
 			.addToggle((toggle) => 
@@ -80,100 +229,5 @@ export class DiscourseSyncSettingsTab extends PluginSettingTab {
 						await this.plugin.saveSettings();
 					})
 			);
-
-		new Setting(containerEl)
-			.setName("User-Api-Key")
-			.setDesc("通过Discourse授权后获得的User-Api-Key，优先用于API请求")
-			.addText((text) =>
-				text
-					.setPlaceholder("user_api_key")
-					.setValue(this.plugin.settings.userApiKey || "")
-					.setDisabled(true)
-			)
-			.addButton((button: ButtonComponent) => {
-				button.setButtonText("生成User-Api-Key");
-				button.onClick(async () => {
-					const { generateKeyPairAndNonce, saveKeyPair, loadKeyPair, clearKeyPair } = await import("./crypto");
-					const pair = generateKeyPairAndNonce();
-					saveKeyPair(pair);
-					const url = `${this.plugin.settings.baseUrl.replace(/\/$/,"")}/user-api-key/new?` +
-						`application_name=Obsidian%20Discourse%20Plugin&client_id=obsidian-${Date.now()}&scopes=read,write&public_key=${encodeURIComponent(pair.publicKeyPem)}&nonce=${pair.nonce}`;
-					window.open(url, '_blank');
-					new Notice("已生成密钥对并跳转授权页面，请授权后粘贴payload。", 8000);
-					this.display();
-				});
-			});
-
-		// payload输入框和解密按钮
-		new Setting(containerEl)
-			.setName("解密payload")
-			.setDesc("请粘贴Discourse返回的payload，自动解密user-api-key")
-			.addText((text) => {
-				text.setPlaceholder("payload base64");
-				text.inputEl.style.width = '80%';
-				(text as any).payloadValue = '';
-				text.onChange((value) => {
-					(text as any).payloadValue = value;
-				});
-			})
-			.addButton((button: ButtonComponent) => {
-				button.setButtonText("解密并保存");
-				button.onClick(async () => {
-					const { decryptUserApiKey, clearKeyPair } = await import("./crypto");
-					const payload = (containerEl.querySelector('input[placeholder="payload base64"]') as HTMLInputElement)?.value;
-					if (!payload) { new Notice("请先粘贴payload"); return; }
-					try {
-						const userApiKey = await decryptUserApiKey(payload);
-						this.plugin.settings.userApiKey = userApiKey;
-						await this.plugin.saveSettings();
-						clearKeyPair();
-						new Notice("User-Api-Key解密成功！", 5000);
-						this.display();
-					} catch (e) {
-						new Notice("User-Api-Key解密失败: " + e, 8000);
-					}
-				});
-			});
-
-		new Setting(containerEl)
-			.setName(t('TEST_API_KEY'))
-			.setDesc('')
-			.addButton((button: ButtonComponent) => {
-				button
-					.setButtonText(t('TEST_API_KEY'))
-					.setCta()
-					.onClick(async () => {
-						button.setButtonText(t('TESTING'));
-						button.setDisabled(true);
-						
-						const result = await this.plugin.api.testApiKey();
-						
-						button.setButtonText(t('TEST_API_KEY'));
-						button.setDisabled(false);
-						
-						if (result.success) {
-							new Notice(result.message, 5000);
-						} else {
-							const errorEl = containerEl.createDiv('discourse-api-error');
-							errorEl.createEl('h3', { text: t('API_TEST_FAILED') });
-							
-							const formattedMessage = typeof result.message === 'string' 
-								? result.message 
-								: JSON.stringify(result.message, null, 2);
-							
-							errorEl.createEl('p', { text: formattedMessage });
-							
-							errorEl.style.backgroundColor = 'rgba(255, 0, 0, 0.1)';
-							errorEl.style.border = '1px solid rgba(255, 0, 0, 0.3)';
-							errorEl.style.borderRadius = '5px';
-							errorEl.style.padding = '10px';
-							errorEl.style.marginTop = '10px';
-							
-							setTimeout(() => {
-								errorEl.remove();
-							}, 10000);
-						}
-					});
-			});
 	}
 }

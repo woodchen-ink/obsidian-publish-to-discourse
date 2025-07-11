@@ -7,6 +7,45 @@ If your plugin does not need CSS, delete this file.
 
 */
 
+/* Settings Page Styles */
+.discourse-config-section {
+  margin: 20px 0;
+  padding: var(--size-4-4);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-m);
+  background: var(--background-secondary);
+}
+
+.discourse-config-section h2 {
+  margin: 0 0 var(--size-2-3) 0;
+  color: var(--text-accent);
+  border-bottom: 2px solid var(--interactive-accent);
+  padding-bottom: var(--size-2-1);
+  font-size: var(--font-text-size);
+  font-weight: var(--font-weight-bold);
+}
+
+.discourse-step {
+  margin: var(--size-2-3) 0;
+  padding: var(--size-2-3);
+  border-left: 3px solid var(--interactive-accent);
+  background: var(--background-primary);
+  border-radius: 0 var(--radius-s) var(--radius-s) 0;
+}
+
+.discourse-step-title {
+  font-weight: var(--font-weight-bold);
+  color: var(--text-accent);
+  margin-bottom: var(--size-2-1);
+  font-size: var(--font-ui-small);
+}
+
+.discourse-step-description {
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+  margin-bottom: var(--size-2-2);
+}
+
 /* Basic Modal Style Override */
 .modal.mod-discourse-sync {
   max-width: 500px;
@@ -134,86 +173,7 @@ If your plugin does not need CSS, delete this file.
 
 /* 这些规则已经被上面的 !important 规则覆盖了，移除重复 */
 
-/* Notice Style */
-.discourse-sync-modal .notice {
-  margin-top: 16px;
-  padding: 16px;
-  border-radius: var(--radius-m);
-  text-align: left;
-  font-size: 14px;
-  box-shadow: var(--shadow-s);
-  border: 1px solid var(--background-modifier-border);
-  transition: all 0.3s ease;
-}
 
-.discourse-sync-modal .notice.success {
-  background-color: var(--background-modifier-success-hover);
-  color: var(--text-success);
-  text-align: center;
-  font-weight: 500;
-}
-
-.discourse-sync-modal .notice.error {
-  /* 基础样式，会被 !important 规则覆盖 */
-}
-
-/* 确保错误通知在所有主题下都可见 */
-.discourse-sync-modal .notice.error {
-  background: var(--background-modifier-error) !important;
-  border: 1px solid var(--background-modifier-error-border) !important;
-  color: var(--text-error) !important;
-}
-
-.discourse-sync-modal .error-title {
-  font-size: 15px;
-  font-weight: 600;
-  margin-bottom: 8px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.discourse-sync-modal .error-title::before {
-  content: "⚠️";
-  font-size: 16px;
-}
-
-.discourse-sync-modal .error-message {
-  font-size: 13px;
-  line-height: 1.5;
-}
-
-/* 确保错误标题和消息在所有主题下都可见 */
-.discourse-sync-modal .error-title {
-  color: var(--text-error) !important;
-}
-
-.discourse-sync-modal .error-message {
-  color: var(--text-error) !important;
-  opacity: 0.9 !important;
-}
-
-.discourse-sync-modal .retry-button {
-  margin-top: 12px;
-  padding: 6px 16px;
-  background-color: transparent;
-  border-radius: var(--radius-s);
-  cursor: pointer;
-  font-size: 13px;
-  font-weight: 500;
-  transition: all 0.2s ease;
-}
-
-/* 确保重试按钮在所有主题下都可见 */
-.discourse-sync-modal .retry-button {
-  color: var(--text-error) !important;
-  border-color: var(--text-error) !important;
-}
-
-.discourse-sync-modal .retry-button:hover {
-  background-color: var(--text-error) !important;
-  color: var(--text-on-accent) !important;
-}
 
 /* Tag Select Area Style */
 .discourse-sync-modal .tag-select-area {
@@ -382,29 +342,7 @@ If your plugin does not need CSS, delete this file.
   position: relative;
 }
 
-.discourse-sync-modal .tag-notice {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  padding: 12px 20px;
-  border-radius: 4px;
-  font-size: 13px;
-  text-align: center;
-  z-index: 1002;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  max-width: 80%;
-  white-space: nowrap;
-  opacity: 0;
-  animation: fadeInOut 2s ease-in-out forwards;
-}
 
-/* 确保标签通知在所有主题下都可见 */
-.discourse-sync-modal .tag-notice {
-  background-color: var(--background-modifier-error) !important;
-  border: 1px solid var(--background-modifier-error-border) !important;
-  color: var(--text-error) !important;
-}
 
 @keyframes fadeInOut {
   0% {
