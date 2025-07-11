@@ -483,3 +483,67 @@ If your plugin does not need CSS, delete this file.
     max-width: none;
   }
 }
+
+/* Update Notice Modal Styles */
+.discourse-update-notice-modal {
+  padding: var(--size-4-4);
+  max-width: 500px;
+  background-color: var(--background-primary);
+  border-radius: var(--radius-l);
+}
+
+.discourse-update-notice-modal .update-notice-title {
+  margin: 0 0 var(--size-2-3) 0;
+  font-size: var(--font-text-size);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-accent);
+  text-align: center;
+}
+
+.discourse-update-notice-modal .update-notice-message {
+  margin-bottom: var(--size-4-4);
+  text-align: left;
+}
+
+.discourse-update-notice-modal .update-notice-message p {
+  margin: 0;
+  color: var(--text-normal);
+  line-height: var(--line-height-normal);
+  font-size: var(--font-ui-medium);
+}
+
+.discourse-update-notice-modal .update-notice-buttons {
+  display: flex;
+  gap: var(--size-2-3);
+  justify-content: center;
+}
+
+.discourse-update-notice-modal .update-notice-buttons button {
+  flex: 1;
+  max-width: 150px;
+  padding: var(--size-2-2) var(--size-2-4);
+  border-radius: var(--radius-m);
+  cursor: pointer;
+  font-weight: var(--font-weight-medium);
+  font-size: var(--font-ui-medium);
+  transition: all 0.2s ease;
+  min-height: 36px;
+  border: 1px solid var(--background-modifier-border);
+  background-color: var(--background-secondary);
+  color: var(--text-normal);
+}
+
+.discourse-update-notice-modal .update-notice-buttons button:hover {
+  background-color: var(--background-modifier-hover);
+}
+
+.discourse-update-notice-modal .update-notice-buttons button.mod-cta {
+  background-color: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border-color: var(--interactive-accent);
+}
+
+.discourse-update-notice-modal .update-notice-buttons button.mod-cta:hover {
+  background-color: var(--interactive-accent-hover);
+  border-color: var(--interactive-accent-hover);
+}

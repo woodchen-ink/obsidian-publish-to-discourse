@@ -7,6 +7,7 @@ export interface DiscourseSyncSettings {
 	category: number;
 	skipH1: boolean;
 	userApiKey: string;
+	lastNotifiedVersion?: string; // 记录上次显示更新通知的版本
 }
 
 export const DEFAULT_SETTINGS: DiscourseSyncSettings = {

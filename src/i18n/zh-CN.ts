@@ -86,5 +86,11 @@ export default {
     'USER_API_KEY_DESC': '当前配置的 User-API-Key（只读）',
     'USER_API_KEY_EMPTY': '请使用下面的流程获取',
     'COPY_API_KEY': '复制',
-    'API_KEY_COPIED': '✅ API Key 已复制到剪贴板'
+    'API_KEY_COPIED': '✅ API Key 已复制到剪贴板',
+
+    // 版本更新提示
+    'UPDATE_NOTICE_TITLE': '🔄 插件已更新 - 需要重新配置',
+    'UPDATE_NOTICE_MESSAGE': '由于认证方式的重大变化，您需要重新配置 User-API-Key。旧的 API Key 和用户名方式已被移除，请前往设置页面重新配置。',
+    'UPDATE_NOTICE_BUTTON': '前往设置',
+    'UPDATE_NOTICE_DISMISS': '我知道了'
 } 
