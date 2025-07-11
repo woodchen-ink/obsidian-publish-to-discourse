@@ -15,7 +15,7 @@ export const DEFAULT_SETTINGS: DiscourseSyncSettings = {
 	baseUrl: "https://yourforum.example.com",
 	category: 1,
 	skipH1: false,
-	useRemoteImageUrl: false,
+	useRemoteImageUrl: true, //默认启用
 	userApiKey: ""
 };
 
