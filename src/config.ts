@@ -8,6 +8,7 @@ export interface DiscourseSyncSettings {
 	disUser: string;
 	category: number;
 	skipH1: boolean;
+	userApiKey?: string; // 新增
 }
 
 export const DEFAULT_SETTINGS: DiscourseSyncSettings = {
@@ -15,7 +16,8 @@ export const DEFAULT_SETTINGS: DiscourseSyncSettings = {
 	apiKey: "apikey",
 	disUser: "DiscourseUsername",
 	category: 1,
-	skipH1: false
+	skipH1: false,
+	userApiKey: "" // 新增
 };
 
 export class DiscourseSyncSettingsTab extends PluginSettingTab {
@@ -78,6 +80,60 @@ export class DiscourseSyncSettingsTab extends PluginSettingTab {
 						await this.plugin.saveSettings();
 					})
 			);
+
+		new Setting(containerEl)
+			.setName("User-Api-Key")
+			.setDesc("通过Discourse授权后获得的User-Api-Key，优先用于API请求")
+			.addText((text) =>
+				text
+					.setPlaceholder("user_api_key")
+					.setValue(this.plugin.settings.userApiKey || "")
+					.setDisabled(true)
+			)
+			.addButton((button: ButtonComponent) => {
+				button.setButtonText("生成User-Api-Key");
+				button.onClick(async () => {
+					const { generateKeyPairAndNonce, saveKeyPair, loadKeyPair, clearKeyPair } = await import("./crypto");
+					const pair = generateKeyPairAndNonce();
+					saveKeyPair(pair);
+					const url = `${this.plugin.settings.baseUrl.replace(/\/$/,"")}/user-api-key/new?` +
+						`application_name=Obsidian%20Discourse%20Plugin&client_id=obsidian-${Date.now()}&scopes=read,write&public_key=${encodeURIComponent(pair.publicKeyPem)}&nonce=${pair.nonce}`;
+					window.open(url, '_blank');
+					new Notice("已生成密钥对并跳转授权页面，请授权后粘贴payload。", 8000);
+					this.display();
+				});
+			});
+
+		// payload输入框和解密按钮
+		new Setting(containerEl)
+			.setName("解密payload")
+			.setDesc("请粘贴Discourse返回的payload，自动解密user-api-key")
+			.addText((text) => {
+				text.setPlaceholder("payload base64");
+				text.inputEl.style.width = '80%';
+				(text as any).payloadValue = '';
+				text.onChange((value) => {
+					(text as any).payloadValue = value;
+				});
+			})
+			.addButton((button: ButtonComponent) => {
+				button.setButtonText("解密并保存");
+				button.onClick(async () => {
+					const { decryptUserApiKey, clearKeyPair } = await import("./crypto");
+					const payload = (containerEl.querySelector('input[placeholder="payload base64"]') as HTMLInputElement)?.value;
+					if (!payload) { new Notice("请先粘贴payload"); return; }
+					try {
+						const userApiKey = await decryptUserApiKey(payload);
+						this.plugin.settings.userApiKey = userApiKey;
+						await this.plugin.saveSettings();
+						clearKeyPair();
+						new Notice("User-Api-Key解密成功！", 5000);
+						this.display();
+					} catch (e) {
+						new Notice("User-Api-Key解密失败: " + e, 8000);
+					}
+				});
+			});
 
 		new Setting(containerEl)
 			.setName(t('TEST_API_KEY'))
