@@ -82,6 +82,7 @@ export class SelectCategoryModal extends Modal {
                 removeBtn.onclick = () => {
                     selectedTags.delete(tag);
                     updateSelectedTags();
+                    showDefaultTags(); // 重新显示网格，让移除的标签重新出现
                 };
             });
         };
@@ -101,18 +102,47 @@ export class SelectCategoryModal extends Modal {
         // 创建标签建议容器
         const tagSuggestions = tagInputContainer.createEl('div', { cls: 'tag-suggestions' });
         
+        // 创建默认标签网格容器
+        const defaultTagsGrid = tagInputContainer.createEl('div', { cls: 'default-tags-grid' });
+        
+        // 显示默认标签网格
+        const showDefaultTags = () => {
+            defaultTagsGrid.empty();
+            const availableTags = this.tags.filter(tag => !selectedTags.has(tag.name)).slice(0, 20);
+            
+            if (availableTags.length > 0) {
+                availableTags.forEach(tag => {
+                    const tagEl = defaultTagsGrid.createEl('span', {
+                        cls: 'grid-tag',
+                        text: tag.name
+                    });
+                    tagEl.onclick = () => {
+                        selectedTags.add(tag.name);
+                        updateSelectedTags();
+                        showDefaultTags(); // 重新显示网格，移除已选标签
+                    };
+                });
+            }
+        };
+        
+        // 初始化显示默认标签网格
+        showDefaultTags();
+        
         // 处理输入事件，显示匹配的标签
         tagInput.oninput = () => {
             const value = tagInput.value.toLowerCase();
-            tagSuggestions.empty();
             
             if (value) {
+                // 有输入时隐藏默认网格，显示搜索结果
+                defaultTagsGrid.style.display = 'none';
+                tagSuggestions.empty();
+                
                 const matches = this.tags
                     .filter(tag => 
                         tag.name.toLowerCase().includes(value) && 
                         !selectedTags.has(tag.name)
                     )
-                    .slice(0, 10);
+                    .slice(0, 20); // 搜索结果显示更多
                 
                 if (matches.length > 0) {
                     // 获取输入框位置和宽度
@@ -126,6 +156,7 @@ export class SelectCategoryModal extends Modal {
                     tagSuggestions.style.top = `${inputRect.bottom + 4}px`;
                     tagSuggestions.style.left = `${inputRect.left}px`;
                     tagSuggestions.style.width = `${Math.min(inputRect.width, maxWidth)}px`;
+                    tagSuggestions.style.display = 'block';
                     
                     matches.forEach(tag => {
                         const suggestion = tagSuggestions.createEl('div', {
@@ -135,11 +166,20 @@ export class SelectCategoryModal extends Modal {
                         suggestion.onclick = () => {
                             selectedTags.add(tag.name);
                             tagInput.value = '';
-                            tagSuggestions.empty();
+                            tagSuggestions.style.display = 'none';
+                            defaultTagsGrid.style.display = 'grid';
                             updateSelectedTags();
+                            showDefaultTags();
                         };
                     });
+                } else {
+                    tagSuggestions.style.display = 'none';
                 }
+            } else {
+                // 无输入时显示默认网格，隐藏搜索结果
+                tagSuggestions.style.display = 'none';
+                defaultTagsGrid.style.display = 'grid';
+                showDefaultTags();
             }
         };
         
@@ -153,16 +193,19 @@ export class SelectCategoryModal extends Modal {
                     if (existingTag) {
                         selectedTags.add(existingTag.name);
                         updateSelectedTags();
+                        showDefaultTags();
                     } else if (this.canCreateTags) {
                         selectedTags.add(value);
                         updateSelectedTags();
+                        showDefaultTags();
                     } else {
                         // 显示权限提示
                         new Notice(t('PERMISSION_ERROR'), 3000);
                     }
                 }
                 tagInput.value = '';
-                tagSuggestions.empty();
+                tagSuggestions.style.display = 'none';
+                defaultTagsGrid.style.display = 'grid';
             }
         };
         
@@ -170,7 +213,8 @@ export class SelectCategoryModal extends Modal {
         tagInput.onblur = () => {
             // 延迟隐藏，以便可以点击建议
             setTimeout(() => {
-                tagSuggestions.empty();
+                tagSuggestions.style.display = 'none';
+                defaultTagsGrid.style.display = 'grid';
             }, 200);
         };
         
