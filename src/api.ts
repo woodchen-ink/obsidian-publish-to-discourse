@@ -303,12 +303,41 @@ export class DiscourseAPI {
                 
                 if (data && data.tags) {
                     const canCreateTags = await this.checkCanCreateTags();
+                    
+                    // 处理所有标签（包括tag_groups中的标签）
+                    const allTags = new Map<string, { name: string; count: number }>();
+                    
+                    // 添加普通标签
                     data.tags.forEach((tag: any) => {
-                        tags.push({
+                        allTags.set(tag.name, { name: tag.name, count: tag.count || 0 });
+                    });
+                    
+                    // 添加tag_groups中的标签
+                    if (data.extras && data.extras.tag_groups) {
+                        data.extras.tag_groups.forEach((group: any) => {
+                            if (group.tags) {
+                                group.tags.forEach((tag: any) => {
+                                    // 如果标签已存在，取较大的count值
+                                    const existing = allTags.get(tag.name);
+                                    if (existing) {
+                                        existing.count = Math.max(existing.count, tag.count || 0);
+                                    } else {
+                                        allTags.set(tag.name, { name: tag.name, count: tag.count || 0 });
+                                    }
+                                });
+                            }
+                        });
+                    }
+                    
+                    // 按count数量排序，转换为最终格式
+                    const sortedTags = Array.from(allTags.values())
+                        .sort((a, b) => b.count - a.count)
+                        .map(tag => ({
                             name: tag.name,
                             canCreate: canCreateTags
-                        });
-                    });
+                        }));
+                    
+                    tags.push(...sortedTags);
                 }
                 
                 return tags;

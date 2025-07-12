@@ -199,42 +199,91 @@ If your plugin does not need CSS, delete this file.
 .discourse-sync-modal .tag {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px 8px;
   background-color: var(--interactive-accent);
   color: var(--text-on-accent);
+  padding: 4px 8px;
   border-radius: var(--radius-s);
   font-size: 12px;
   font-weight: 500;
+  cursor: pointer;
   transition: all 0.2s ease;
-  border: 1px solid var(--interactive-accent);
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .discourse-sync-modal .tag:hover {
   background-color: var(--interactive-accent-hover);
-  border-color: var(--interactive-accent-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-s);
 }
 
 .discourse-sync-modal .remove-tag {
+  margin-left: 6px;
   cursor: pointer;
+  font-weight: bold;
   font-size: 14px;
-  width: 16px;
-  height: 16px;
+  line-height: 1;
+  opacity: 0.8;
+  transition: opacity 0.2s ease;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
-  background-color: var(--background-modifier-hover);
-  margin-left: 4px;
-  transition: all 0.2s ease;
-  opacity: 0.7;
+  background-color: rgba(255, 255, 255, 0.2);
 }
 
 .discourse-sync-modal .remove-tag:hover {
-  background-color: var(--background-modifier-error);
-  color: var(--text-on-accent);
   opacity: 1;
-  transform: scale(1.1);
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+/* 默认标签网格样式 */
+.discourse-sync-modal .default-tags-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 6px;
+  margin-top: 8px;
+  padding: 8px;
+  background-color: var(--background-secondary);
+  border-radius: var(--radius-s);
+  border: 1px solid var(--background-modifier-border);
+}
+
+.discourse-sync-modal .grid-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--background-primary);
+  color: var(--text-normal);
+  padding: 6px 8px;
+  border-radius: var(--radius-s);
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid var(--background-modifier-border);
+  text-align: center;
+  min-height: 28px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.discourse-sync-modal .grid-tag:hover {
+  background-color: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border-color: var(--interactive-accent);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-s);
+}
+
+.discourse-sync-modal .grid-tag:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-xs);
 }
 
 .discourse-sync-modal input[type="text"] {
