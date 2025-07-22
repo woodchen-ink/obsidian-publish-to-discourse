@@ -256,17 +256,20 @@ export default class PublishToDiscourse extends Plugin implements PluginInterfac
 			content = content.replace(/^\s*# [^\n]+\n?/gm, '');
 		}
 
-		// 如果启用了"转换高亮"选项，则转换 ==高亮== 语法为 <marker> 格式
+		// 如果启用了"转换高亮"选项，则转换 ==高亮== 语法为 <mark> 格式
 		if (this.settings.convertHighlight) {
-			content = content.replace(/==([^=]+)==/g, '<marker>$1</marker>');
+			content = content.replace(/==([^=]+)==/g, '<mark>$1</mark>');
 		}
-		
+
 		// 如果启用了"忽略特定标题"选项，则忽略指定标题内的内容
 		if (this.settings.ignoreHeadings) {
 			const headingsToIgnore = this.settings.ignoreHeadings.split(',').map(h => h.trim());
 			headingsToIgnore.forEach(heading => {
-				// 使用正则表达式匹配指定标题及其内容
-				const regex = new RegExp(`^#{1,6} ${heading}.*?(?:\n|$)([\\s\\S]*?)(?=^#{1,6} |$)`, 'gm');
+				// 匹配指定标题及其所有子级内容，直到遇到同级或更高级标题或文档结尾
+				const regex = new RegExp(
+					`(^#{1,6}\\s+${heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}.*\\n)([\\s\\S]*?)(?=^#{1,6}\\s|\\Z)`,
+					'gm'
+				);
 				content = content.replace(regex, '');
 			});
 		}

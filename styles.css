@@ -697,12 +697,32 @@ If your plugin does not need CSS, delete this file.
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 12px;
+}
+
+.preset-name-container {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-inline-end: 1em;
 }
 
 .preset-name {
-  font-weight: var(--font-weight-bold);
+  font-weight: var(--font-weight-bold, bold);
   color: var(--text-normal);
   font-size: var(--font-ui-medium);
+}
+
+.preset-url {
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+  font-family: var(--font-monospace);
+  cursor: pointer;
+  text-decoration: underline;  
+}
+
+.preset-url:hover {
+  color: var(--interactive-accent);
 }
 
 .preset-name.selected {
@@ -712,6 +732,10 @@ If your plugin does not need CSS, delete this file.
 .preset-name.selected::after {
   content: ' ⭐';
   color: var(--color-yellow);
+}
+
+.forum-presets-container .button {
+  cursor: pointer;
 }
 
 .preset-actions {

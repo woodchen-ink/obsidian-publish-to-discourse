@@ -16,7 +16,7 @@ export interface DiscourseSyncSettings {
 	baseUrl: string;
 	category: number;
 	skipH1: boolean;
-	convertHighlight: boolean; // 是否转换==高亮==为 <marker> 格式
+	convertHighlight: boolean; // 是否转换==高亮==为 <mark> 格式
 	ignoreHeadings: string; // 忽略特定标题内的内容
 	useRemoteImageUrl: boolean;
 	userApiKey: string;
@@ -32,7 +32,7 @@ export const DEFAULT_SETTINGS: DiscourseSyncSettings = {
 	baseUrl: "https://yourforum.example.com",
 	category: 1,
 	skipH1: false,
-	convertHighlight: true, // 默认转换 ==高亮== 为 <marker>
+	convertHighlight: true, // 默认转换 ==高亮== 为 <mark>
 	ignoreHeadings: "", 
 	useRemoteImageUrl: true, //默认启用
 	userApiKey: "",
@@ -391,7 +391,7 @@ export class DiscourseSyncSettingsTab extends PluginSettingTab {
 						await this.plugin.saveSettings();
 					})
 			);
-			
+
 		new Setting(publishSection)
 			.setName(t('IGNORE_HEADINGS'))
 			.setDesc(t('IGNORE_HEADINGS_DESC'))
@@ -423,9 +423,20 @@ export class DiscourseSyncSettingsTab extends PluginSettingTab {
 		
 		// 预设名称和状态
 		const headerEl = presetContainer.createDiv('preset-header');
-		const nameEl = headerEl.createDiv('preset-name');
-		nameEl.textContent = `${preset.name} (${preset.baseUrl})`;
+
+		const nameContainer = headerEl.createDiv('preset-name-container');
+
+		const nameEl = nameContainer.createDiv('preset-name');
+		nameEl.textContent = `${preset.name}`;
 		
+		// 预设链接（单独显示 & 可点击）
+		const urlEl = nameContainer.createDiv("preset-url");
+		urlEl.textContent = preset.baseUrl;
+		urlEl.title = preset.baseUrl;
+		urlEl.onclick = () => {
+		  window.open(preset.baseUrl, "_blank");
+		};
+
 		// 当前选中状态
 		if (this.plugin.settings.selectedForumId === preset.id) {
 			nameEl.addClass('selected');
