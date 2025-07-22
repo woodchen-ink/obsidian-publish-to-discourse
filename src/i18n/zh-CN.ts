@@ -5,6 +5,10 @@ export default {
 
     'SKIP_H1': '跳过一级标题',
     'SKIP_H1_DESC': '发布到 Discourse 时跳过笔记中的一级标题',
+    'CONVERT_HIGHLIGHT': '转换高亮',
+    'CONVERT_HIGHLIGHT_DESC': '将 ==高亮== 语法转换为 <marker> 格式',
+    'IGNORE_HEADINGS': '忽略特定标题',
+    'IGNORE_HEADINGS_DESC': '发布时忽略特定标题内的内容。输入标题名用逗号分隔（例如："草稿, 本地内容"——不需要井号）',
     'USE_REMOTE_IMAGE_URL': '使用远程图片URL',
     'USE_REMOTE_IMAGE_URL_DESC': '发布后用Discourse上的远程图片URL替换本地文章中的图片链接',
     'TEST_API_KEY': '测试连接',

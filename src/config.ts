@@ -16,6 +16,8 @@ export interface DiscourseSyncSettings {
 	baseUrl: string;
 	category: number;
 	skipH1: boolean;
+	convertHighlight: boolean; // 是否转换==高亮==为 <marker> 格式
+	ignoreHeadings: string; // 忽略特定标题内的内容
 	useRemoteImageUrl: boolean;
 	userApiKey: string;
 	lastNotifiedVersion?: string; // 记录上次显示更新通知的版本
@@ -30,6 +32,8 @@ export const DEFAULT_SETTINGS: DiscourseSyncSettings = {
 	baseUrl: "https://yourforum.example.com",
 	category: 1,
 	skipH1: false,
+	convertHighlight: true, // 默认转换 ==高亮== 为 <marker>
+	ignoreHeadings: "", 
 	useRemoteImageUrl: true, //默认启用
 	userApiKey: "",
 	enableMultiForums: false,
@@ -372,6 +376,31 @@ export class DiscourseSyncSettingsTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.skipH1)
 					.onChange(async (value) => {
 						this.plugin.settings.skipH1 = value;
+						await this.plugin.saveSettings();
+					})
+			);
+			
+		new Setting(publishSection)
+			.setName(t('CONVERT_HIGHLIGHT'))
+			.setDesc(t('CONVERT_HIGHLIGHT_DESC'))
+			.addToggle((toggle) => 
+				toggle
+					.setValue(this.plugin.settings.convertHighlight)
+					.onChange(async (value) => {
+						this.plugin.settings.convertHighlight = value;
+						await this.plugin.saveSettings();
+					})
+			);
+			
+		new Setting(publishSection)
+			.setName(t('IGNORE_HEADINGS'))
+			.setDesc(t('IGNORE_HEADINGS_DESC'))
+			.addText((text) =>
+				text
+					.setPlaceholder(t('IGNORE_HEADINGS_PLACEHOLDER'))
+					.setValue(this.plugin.settings.ignoreHeadings)
+					.onChange(async (value) => {
+						this.plugin.settings.ignoreHeadings = value;
 						await this.plugin.saveSettings();
 					})
 			);
