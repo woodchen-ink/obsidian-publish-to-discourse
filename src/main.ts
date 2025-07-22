@@ -48,6 +48,7 @@ export default class PublishToDiscourse extends Plugin implements PluginInterfac
 		this.addCommand({
 			id: "publish-to-discourse",
 			name: t('PUBLISH_TO_DISCOURSE'),
+			icon: 'newspaper',
 			callback: () => {
 				this.publishToDiscourse();
 			},
@@ -57,6 +58,7 @@ export default class PublishToDiscourse extends Plugin implements PluginInterfac
 		this.addCommand({
 			id: "open-in-discourse",
 			name: t('OPEN_IN_DISCOURSE'),
+			icon: 'globe',
 			callback: () => {
 				this.openInDiscourse();
 			},
@@ -75,6 +77,7 @@ export default class PublishToDiscourse extends Plugin implements PluginInterfac
 	registerDirMenu(menu: Menu, file: TFile) {
 		const syncDiscourse = (item: MenuItem) => {
 			item.setTitle(t('PUBLISH_TO_DISCOURSE'));
+			item.setIcon('newspaper');
 			item.onClick(async () => {
 				await this.publishToDiscourse(file);
 			});
