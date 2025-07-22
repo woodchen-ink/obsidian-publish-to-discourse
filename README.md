@@ -72,4 +72,15 @@
 
 If this plugin has been helpful to you, feel free to buy me a coffee. Of course, using it is the greatest support you can give me.
 
-链接 / Link: https://wise.com/pay/business/czlltd
+| 微信赞赏 | 支付宝 |
+|:---:|:---:|
+| ![微信赞赏码](https://i.czl.net/b2/img/2025/07/687f3c9d3724b.jpg) | ![支付宝收款码](https://i.czl.net/b2/img/2025/07/687f3c9d869ca.jpg) |
+
+国际支付 / International Payment:
+
+- Wise (Card / Apple Pay / Google Pay / Bank Transfer):  
+  https://wise.com/pay/business/czlltd
+- Stripe (Credit Card / Apple Pay / Google Pay):  
+  https://donate.stripe.com/6oUeVefrQcNzg2J1cdco000
+
+
