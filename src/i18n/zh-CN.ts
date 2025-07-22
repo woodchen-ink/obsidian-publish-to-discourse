@@ -88,5 +88,40 @@ export default {
     'USER_API_KEY_DESC': '当前配置的 User-API-Key（只读）',
     'USER_API_KEY_EMPTY': '请使用下面的流程获取',
     'COPY_API_KEY': '复制',
-    'API_KEY_COPIED': '✅ API Key 已复制到剪贴板'
+    'API_KEY_COPIED': '✅ API Key 已复制到剪贴板',
+
+    // Tab导航
+    'TAB_FORUM': '论坛设置',
+    'TAB_FORUM_DESC': '配置单论坛或多个论坛，支持API密钥管理',
+    'TAB_BASIC': '基础配置',
+    'TAB_BASIC_DESC': '单论坛基础设置和API配置',
+    'TAB_MULTI_FORUMS': '多论坛管理',
+    'TAB_MULTI_FORUMS_DESC': '配置和管理多个论坛预设',
+    'TAB_PUBLISH': '发布选项',
+    'TAB_PUBLISH_DESC': '自定义发布行为和内容处理',
+
+    // 多论坛配置
+    'CONFIG_MULTI_FORUM_TITLE': '多论坛配置',
+    'CONFIG_MULTI_FORUM_DESC': '管理多个论坛预设，支持一键切换发布目标',
+    'ENABLE_MULTI_FORUMS': '启用多论坛功能',
+    'ENABLE_MULTI_FORUMS_DESC': '开启后可以配置多个论坛预设，发布时选择目标论坛',
+    'FORUM_PRESETS': '论坛预设',
+    'ADD_FORUM_PRESET': '添加论坛预设',
+    'ADD_FORUM_PRESET_DESC': '创建新的论坛配置预设',
+    'NEW_FORUM_PRESET': '新论坛预设',
+    'EDIT': '编辑',
+    'DELETE': '删除',
+    'SET_DEFAULT': '设为默认',
+    'EDIT_FORUM_NAME': '编辑论坛名称',
+    'EDIT_FORUM_URL': '编辑论坛地址',
+    'EDIT_FORUM_API_KEY': '编辑API密钥',
+    'CONFIRM_DELETE_PRESET': '确定要删除预设 "{name}" 吗？',
+
+    // 论坛选择
+    'SELECT_FORUM_TITLE': '选择发布论坛',
+    'SELECT_FORUM_DESC': '请选择要发布到的论坛：',
+    'SINGLE_FORUM_MODE': '单论坛模式',
+    'MULTI_FORUM_MODE': '多论坛模式',
+    'CANCEL': '取消',
+    'SAVE': '保存'
 } 

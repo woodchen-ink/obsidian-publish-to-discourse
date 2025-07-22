@@ -1,11 +1,11 @@
 import { Menu, MenuItem, Plugin, TFile, moment } from 'obsidian';
-import { DEFAULT_SETTINGS, DiscourseSyncSettings, DiscourseSyncSettingsTab } from './config';
+import { DEFAULT_SETTINGS, DiscourseSyncSettings, DiscourseSyncSettingsTab, ForumPreset } from './config';
 import * as yaml from 'yaml';
 import { t, setLocale } from './i18n';
 import { expandEmbeds } from './expand-embeds';
 import { DiscourseAPI } from './api';
 import { EmbedHandler } from './embed-handler';
-import { SelectCategoryModal, CategoryConflictModal } from './ui';
+import { SelectCategoryModal, CategoryConflictModal, ForumSelectionModal } from './ui';
 import { NotifyUser } from './notification';
 import { getFrontMatter, removeFrontMatter } from './utils';
 import { ActiveFile, PluginInterface } from './types';
@@ -89,6 +89,20 @@ export default class PublishToDiscourse extends Plugin implements PluginInterfac
 		if (!targetFile) {
 			new NotifyUser(this.app, t('NO_ACTIVE_FILE')).open();
 			return;
+		}
+		
+		// 如果启用了多论坛功能，先让用户选择论坛
+		if (this.settings.enableMultiForums && this.settings.forumPresets.length > 0) {
+			const forumSelectionModal = new ForumSelectionModal(this.app, this, this.settings.forumPresets);
+			const selectedForum = await forumSelectionModal.showAndWait();
+			
+			if (!selectedForum) {
+				// 用户取消了选择
+				return;
+			}
+			
+			// 切换到选中的论坛配置
+			await this.switchToForum(selectedForum);
 		}
 		
 		// 使用expandEmbeds处理嵌入内容
@@ -178,6 +192,21 @@ export default class PublishToDiscourse extends Plugin implements PluginInterfac
 		if (categories.length > 0) {
 			new SelectCategoryModal(this.app, this, categories, tags).open();
 		}
+	}
+
+	// 切换到指定论坛配置
+	private async switchToForum(forumPreset: ForumPreset) {
+		// 临时保存当前配置到选中的论坛设置
+		this.settings.baseUrl = forumPreset.baseUrl;
+		this.settings.userApiKey = forumPreset.userApiKey;
+		// this.settings.category = forumPreset.category; // 已移除
+		this.settings.selectedForumId = forumPreset.id;
+		
+		// 重新初始化API客户端
+		this.api = new DiscourseAPI(this.app, this.settings);
+		this.embedHandler = new EmbedHandler(this.app, this.api);
+		
+		console.log(`Switched to forum: ${forumPreset.name} (${forumPreset.baseUrl})`);
 	}
 
 	// 在Discourse中打开

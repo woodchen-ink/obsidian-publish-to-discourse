@@ -1,6 +1,7 @@
 import { App, Modal, Notice } from 'obsidian';
 import { t } from './i18n';
 import { PluginInterface } from './types';
+import { ForumPreset } from './config';
 
 // 选择分类的模态框
 export class SelectCategoryModal extends Modal {
@@ -387,5 +388,239 @@ export class CategoryConflictModal extends Modal {
         if (this.resolve) {
             this.resolve(false);
         }
+    }
+}
+
+// 论坛选择模态框
+export class ForumSelectionModal extends Modal {
+    plugin: PluginInterface;
+    forumPresets: ForumPreset[];
+    resolve: (forumPreset: ForumPreset | null) => void;
+
+    constructor(app: App, plugin: PluginInterface, forumPresets: ForumPreset[]) {
+        super(app);
+        this.plugin = plugin;
+        this.forumPresets = forumPresets;
+    }
+
+    onOpen() {
+        const { contentEl } = this;
+        contentEl.empty();
+        contentEl.addClass('discourse-forum-selection-modal');
+
+        // 标题
+        contentEl.createEl('h2', { text: t('SELECT_FORUM_TITLE') });
+
+        // 说明文字
+        const description = contentEl.createEl('div', { cls: 'forum-selection-description' });
+        description.createEl('p', { text: t('SELECT_FORUM_DESC') });
+
+        // 论坛选项容器
+        const forumsContainer = contentEl.createEl('div', { cls: 'forums-container' });
+
+        // 如果没有启用多论坛或者没有预设，显示单论坛模式
+        if (!this.plugin.settings.enableMultiForums || this.forumPresets.length === 0) {
+            const singleForumOption = forumsContainer.createEl('div', { cls: 'forum-option single-forum' });
+            
+            const optionHeader = singleForumOption.createEl('div', { cls: 'forum-option-header' });
+            optionHeader.createEl('div', { cls: 'forum-name', text: t('SINGLE_FORUM_MODE') });
+            optionHeader.createEl('div', { cls: 'forum-url', text: this.plugin.settings.baseUrl });
+            
+            const selectButton = singleForumOption.createEl('button', {
+                cls: 'forum-select-button',
+                text: t('PUBLISH')
+            });
+            
+            selectButton.onclick = () => {
+                // 返回null表示使用单论坛模式
+                this.resolve(null);
+                this.close();
+            };
+        } else {
+            // 显示多论坛选项
+            this.forumPresets.forEach(preset => {
+                const forumOption = forumsContainer.createEl('div', { cls: 'forum-option' });
+                
+                // 如果是当前选中的论坛，添加selected类
+                if (this.plugin.settings.selectedForumId === preset.id) {
+                    forumOption.addClass('selected');
+                }
+                
+                const optionHeader = forumOption.createEl('div', { cls: 'forum-option-header' });
+                optionHeader.createEl('div', { cls: 'forum-name', text: preset.name });
+                optionHeader.createEl('div', { cls: 'forum-url', text: preset.baseUrl });
+                
+                const selectButton = forumOption.createEl('button', {
+                    cls: 'forum-select-button',
+                    text: t('PUBLISH')
+                });
+                
+                selectButton.onclick = () => {
+                    this.resolve(preset);
+                    this.close();
+                };
+            });
+        }
+
+        // 取消按钮
+        const buttonArea = contentEl.createEl('div', { cls: 'button-area' });
+        const cancelButton = buttonArea.createEl('button', {
+            cls: 'cancel-button',
+            text: t('CANCEL')
+        });
+        cancelButton.onclick = () => {
+            this.resolve(null);
+            this.close();
+        };
+    }
+
+    showAndWait(): Promise<ForumPreset | null> {
+        return new Promise((resolve) => {
+            this.resolve = resolve;
+            this.open();
+        });
+    }
+}
+
+// 论坛预设编辑模态框
+export class ForumPresetEditModal extends Modal {
+    preset: ForumPreset;
+    resolve: (preset: ForumPreset | null) => void;
+    isNew: boolean;
+
+    constructor(app: App, preset: ForumPreset, isNew = false) {
+        super(app);
+        this.preset = {...preset}; // 创建副本
+        this.isNew = isNew;
+    }
+
+    onOpen() {
+        const { contentEl } = this;
+        contentEl.empty();
+        contentEl.addClass('discourse-preset-edit-modal');
+
+        // 标题
+        contentEl.createEl('h2', { 
+            text: this.isNew ? t('ADD_FORUM_PRESET') : t('EDIT') + ' ' + this.preset.name 
+        });
+
+        // 表单
+        const form = contentEl.createDiv('preset-edit-form');
+
+        // 论坛名称
+        const nameGroup = form.createDiv('form-group');
+        nameGroup.createEl('label', { text: t('EDIT_FORUM_NAME') });
+        const nameInput = nameGroup.createEl('input', { type: 'text' });
+        nameInput.value = this.preset.name;
+        nameInput.placeholder = t('NEW_FORUM_PRESET');
+
+        // 论坛地址
+        const urlGroup = form.createDiv('form-group');
+        urlGroup.createEl('label', { text: t('EDIT_FORUM_URL') });
+        const urlInput = urlGroup.createEl('input', { type: 'url' });
+        urlInput.value = this.preset.baseUrl;
+        urlInput.placeholder = 'https://forum.example.com';
+
+        // API密钥区域
+        const apiSection = form.createDiv('form-group');
+        apiSection.createEl('label', { text: t('USER_API_KEY') });
+        const apiInput = apiSection.createEl('input', { type: 'text', attr: { readonly: 'readonly' } });
+        apiInput.value = this.preset.userApiKey;
+        apiInput.placeholder = t('USER_API_KEY');
+        apiInput.style.fontFamily = 'monospace';
+        apiInput.style.fontSize = '12px';
+        apiInput.style.color = 'var(--text-muted)';
+        apiInput.style.background = 'var(--background-secondary)';
+        apiInput.style.width = '100%';
+        apiInput.readOnly = true;
+        // 跟随输入实时更新
+        // apiInput.addEventListener('input', () => {
+        //     apiPlain.value = apiInput.value;
+        // });
+
+        // 获取API Key按钮
+        const getApiBtn = apiSection.createEl('button', {
+            cls: 'get-api-btn',
+            text: t('GENERATE_AUTH_LINK')
+        });
+        getApiBtn.onclick = async () => {
+            const { generateKeyPairAndNonce, saveKeyPair } = await import("./crypto");
+            const pair = generateKeyPairAndNonce();
+            saveKeyPair(pair);
+            const url = `${urlInput.value.replace(/\/$/,"")}/user-api-key/new?` +
+                `application_name=Obsidian%20Discourse%20Plugin&client_id=obsidian-${Date.now()}&scopes=read,write&public_key=${encodeURIComponent(pair.publicKeyPem)}&nonce=${pair.nonce}`;
+            window.open(url, '_blank');
+            new Notice(t('AUTH_LINK_GENERATED'), 8000);
+        };
+
+        // 解密payload区域
+        const decryptGroup = form.createDiv('form-group');
+        decryptGroup.createEl('label', { text: t('DECRYPT_PAYLOAD') });
+        const payloadInput = decryptGroup.createEl('input', { type: 'text' });
+        payloadInput.placeholder = t('PAYLOAD_PLACEHOLDER');
+        const decryptBtn = decryptGroup.createEl('button', {
+            cls: 'decrypt-btn',
+            text: t('DECRYPT_AND_SAVE')
+        });
+        decryptBtn.onclick = async () => {
+            const { decryptUserApiKey, clearKeyPair } = await import("./crypto");
+            const payload = payloadInput.value;
+            if (!payload) { new Notice(t('PAYLOAD_PLACEHOLDER')); return; }
+            try {
+                const userApiKey = await decryptUserApiKey(payload);
+                apiInput.value = userApiKey;
+                this.preset.userApiKey = userApiKey;
+                clearKeyPair();
+                new Notice(t('DECRYPT_SUCCESS'), 5000);
+            } catch (e) {
+                new Notice(t('DECRYPT_FAILED') + e, 8000);
+            }
+        };
+
+        // 按钮区域
+        const buttonArea = contentEl.createDiv('button-area');
+        // 保存按钮
+        const saveButton = buttonArea.createEl('button', {
+            cls: 'save-button',
+            text: t('SAVE')
+        });
+        saveButton.onclick = () => {
+            // 验证输入
+            if (!nameInput.value.trim()) {
+                nameInput.focus();
+                return;
+            }
+            if (!urlInput.value.trim()) {
+                urlInput.focus();
+                return;
+            }
+            if (!apiInput.value.trim()) {
+                apiInput.focus();
+                return;
+            }
+            // 更新预设数据
+            this.preset.name = nameInput.value.trim();
+            this.preset.baseUrl = urlInput.value.trim().replace(/\/$/, '');
+            this.preset.userApiKey = apiInput.value.trim();
+            this.resolve(this.preset);
+            this.close();
+        };
+        // 取消按钮
+        const cancelButton = buttonArea.createEl('button', {
+            cls: 'cancel-button',
+            text: t('CANCEL')
+        });
+        cancelButton.onclick = () => {
+            this.resolve(null);
+            this.close();
+        };
+        nameInput.focus();
+    }
+
+    showAndWait(): Promise<ForumPreset | null> {
+        return new Promise((resolve) => {
+            this.resolve = resolve;
+            this.open();
+        });
     }
 }

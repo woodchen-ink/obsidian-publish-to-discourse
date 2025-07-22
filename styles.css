@@ -596,3 +596,323 @@ If your plugin does not need CSS, delete this file.
   background-color: var(--interactive-accent-hover);
   border-color: var(--interactive-accent-hover);
 }
+
+/* Tab Navigation Styles */
+.tab-navigation {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid var(--background-modifier-border);
+  padding-bottom: 12px;
+}
+
+.tab-item {
+  flex: 1;
+  padding: 12px 16px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-m);
+  background: var(--background-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.tab-item:hover {
+  background: var(--background-modifier-hover);
+  border-color: var(--interactive-accent);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.tab-item.active {
+  background: var(--interactive-accent);
+  border-color: var(--interactive-accent);
+  color: var(--text-on-accent);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.tab-item.active::after {
+  content: '';
+  position: absolute;
+  bottom: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 8px solid var(--interactive-accent);
+}
+
+.tab-label {
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-ui-medium);
+  margin-bottom: 4px;
+}
+
+.tab-description {
+  font-size: var(--font-ui-smaller);
+  opacity: 0.8;
+  line-height: 1.4;
+}
+
+.tab-content {
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Multi-Forum Configuration Styles */
+.forum-presets-container {
+  margin-top: 20px;
+}
+
+.forum-presets-container h3 {
+  margin: 0 0 16px 0;
+  color: var(--text-accent);
+  font-size: var(--font-ui-medium);
+  font-weight: var(--font-weight-bold);
+}
+
+.forum-preset-item {
+  margin: 12px 0;
+  padding: 16px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-m);
+  background: var(--background-primary);
+  transition: all 0.2s ease;
+}
+
+.forum-preset-item:hover {
+  border-color: var(--interactive-accent);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.preset-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.preset-name {
+  font-weight: var(--font-weight-bold);
+  color: var(--text-normal);
+  font-size: var(--font-ui-medium);
+}
+
+.preset-name.selected {
+  color: var(--interactive-accent);
+}
+
+.preset-name.selected::after {
+  content: ' ⭐';
+  color: var(--color-yellow);
+}
+
+.preset-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.preset-action-btn {
+  padding: 6px 12px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  background: var(--background-secondary);
+  color: var(--text-normal);
+  cursor: pointer;
+  font-size: var(--font-ui-smaller);
+  transition: all 0.2s ease;
+}
+
+.preset-action-btn:hover {
+  background: var(--background-modifier-hover);
+  border-color: var(--interactive-accent);
+}
+
+.preset-action-btn.delete {
+  color: var(--text-error);
+}
+
+.preset-action-btn.delete:hover {
+  background: var(--background-modifier-error);
+  border-color: var(--text-error);
+}
+
+/* Forum Selection Modal Styles */
+.discourse-forum-selection-modal {
+  max-width: 600px;
+}
+
+.forum-selection-description {
+  margin: 16px 0;
+  color: var(--text-muted);
+  font-size: var(--font-ui-medium);
+}
+
+.forums-container {
+  margin: 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.forum-option {
+  padding: 16px;
+  border: 2px solid var(--background-modifier-border);
+  border-radius: var(--radius-m);
+  background: var(--background-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.forum-option:hover {
+  border-color: var(--interactive-accent);
+  background: var(--background-modifier-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.forum-option.selected {
+  border-color: var(--interactive-accent);
+  background: var(--background-modifier-success);
+}
+
+.forum-option.selected::before {
+  content: '✓';
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 20px;
+  height: 20px;
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.forum-option-header {
+  margin-bottom: 12px;
+}
+
+.forum-name {
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-ui-medium);
+  color: var(--text-normal);
+  margin-bottom: 4px;
+}
+
+.forum-url {
+  font-size: var(--font-ui-small);
+  color: var(--text-muted);
+  font-family: var(--font-monospace);
+}
+
+.forum-option.selected .forum-url {
+  color: var(--text-on-accent);
+}
+
+.forum-option.selected .forum-name {
+  color: var(--text-on-accent);
+}
+
+.forum-select-button {
+  padding: 8px 16px;
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border: none;
+  border-radius: var(--radius-s);
+  cursor: pointer;
+  font-weight: var(--font-weight-bold);
+  transition: all 0.2s ease;
+  font-size: var(--font-ui-medium);
+}
+
+.forum-select-button:hover {
+  background: var(--interactive-accent-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.cancel-button {
+  padding: 8px 16px;
+  background: var(--background-secondary);
+  color: var(--text-normal);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: var(--font-ui-medium);
+}
+
+.cancel-button:hover {
+  background: var(--background-modifier-hover);
+  border-color: var(--interactive-accent);
+}
+
+/* Forum Preset Edit Modal Styles */
+.discourse-preset-edit-modal {
+  max-width: 500px;
+}
+
+.preset-edit-form {
+  margin: 20px 0;
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: var(--font-weight-bold);
+  color: var(--text-normal);
+  font-size: var(--font-ui-medium);
+}
+
+.form-group input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  background: var(--background-primary);
+  color: var(--text-normal);
+  font-size: var(--font-ui-medium);
+  box-sizing: border-box;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: var(--interactive-accent);
+  box-shadow: 0 0 0 2px rgba(var(--interactive-accent-rgb), 0.2);
+}
+
+.save-button {
+  padding: 10px 20px;
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border: none;
+  border-radius: var(--radius-s);
+  cursor: pointer;
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-ui-medium);
+  margin-right: 8px;
+  transition: all 0.2s ease;
+}
+
+.save-button:hover {
+  background: var(--interactive-accent-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}

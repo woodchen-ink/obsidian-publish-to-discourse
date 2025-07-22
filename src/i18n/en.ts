@@ -88,5 +88,38 @@ export default {
     'USER_API_KEY_DESC': 'Current configured User-API-Key (read-only)',
     'USER_API_KEY_EMPTY': 'Please use the process below to obtain one',
     'COPY_API_KEY': 'Copy',
-    'API_KEY_COPIED': '✅ API Key copied to clipboard'
+    'API_KEY_COPIED': '✅ API Key copied to clipboard',
+
+    // Tab Navigation
+    'TAB_FORUM': 'Forum Settings',
+    'TAB_FORUM_DESC': 'Configure single or multiple forums, support API Key management',
+    'TAB_MULTI_FORUMS': 'Multi-Forum Management',
+    'TAB_MULTI_FORUMS_DESC': 'Configure and manage multiple forum presets',
+    'TAB_PUBLISH': 'Publish Options',
+    'TAB_PUBLISH_DESC': 'Customize publishing behavior and content processing',
+
+    // Multi-forum Configuration
+    'CONFIG_MULTI_FORUM_TITLE': 'Multi-Forum Configuration',
+    'CONFIG_MULTI_FORUM_DESC': 'Manage multiple forum presets for easy switching between publishing targets',
+    'ENABLE_MULTI_FORUMS': 'Enable Multi-Forum Feature',
+    'ENABLE_MULTI_FORUMS_DESC': 'When enabled, you can configure multiple forum presets and choose the target forum when publishing',
+    'FORUM_PRESETS': 'Forum Presets',
+    'ADD_FORUM_PRESET': 'Add Forum Preset',
+    'ADD_FORUM_PRESET_DESC': 'Create a new forum configuration preset',
+    'NEW_FORUM_PRESET': 'New Forum Preset',
+    'EDIT': 'Edit',
+    'DELETE': 'Delete',
+    'SET_DEFAULT': 'Set Default',
+    'EDIT_FORUM_NAME': 'Edit Forum Name',
+    'EDIT_FORUM_URL': 'Edit Forum URL',
+    'EDIT_FORUM_API_KEY': 'Edit API Key',
+    'CONFIRM_DELETE_PRESET': 'Are you sure you want to delete preset "{name}"?',
+
+    // Forum Selection
+    'SELECT_FORUM_TITLE': 'Select Publishing Forum',
+    'SELECT_FORUM_DESC': 'Please select the forum to publish to:',
+    'SINGLE_FORUM_MODE': 'Single Forum Mode',
+    'MULTI_FORUM_MODE': 'Multi-Forum Mode',
+    'CANCEL': 'Cancel',
+    'SAVE': 'Save'
 } 
