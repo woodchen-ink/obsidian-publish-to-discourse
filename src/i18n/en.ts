@@ -5,6 +5,11 @@ export default {
 
     'SKIP_H1': 'Skip First Heading',
     'SKIP_H1_DESC': 'Skip the first heading (H1) when publishing to Discourse',
+    'CONVERT_HIGHLIGHT': 'Convert Highlight',
+    'CONVERT_HIGHLIGHT_DESC': 'Convert ==highlight== syntax to <marker> format',
+    'IGNORE_HEADINGS': 'Ignore Specific Headings',
+    'IGNORE_HEADINGS_DESC': 'Ignore content within specific headings when publishing. Separate with commas',
+    'IGNORE_HEADINGS_PLACEHOLDER': 'e.g., Draft, Local (no need for #)',
     'USE_REMOTE_IMAGE_URL': 'Use Remote Image URLs',
     'USE_REMOTE_IMAGE_URL_DESC': 'Replace local image links with remote URLs from Discourse after publishing',
     'TEST_API_KEY': 'Test Connection',
