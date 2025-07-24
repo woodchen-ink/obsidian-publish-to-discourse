@@ -21,7 +21,8 @@ export interface DiscourseSyncSettings {
 	useRemoteImageUrl: boolean;
 	userApiKey: string;
 	lastNotifiedVersion?: string; // 记录上次显示更新通知的版本
-	
+	forceFilenameAsTitle: boolean; // 强制使用文件名作为标题
+
 	// 多论坛配置
 	enableMultiForums: boolean; // 是否启用多论坛功能
 	forumPresets: ForumPreset[]; // 论坛预设列表
@@ -33,9 +34,10 @@ export const DEFAULT_SETTINGS: DiscourseSyncSettings = {
 	category: 1,
 	skipH1: false,
 	convertHighlight: true, // 默认转换 ==高亮== 为 <mark>
-	ignoreHeadings: "", 
+	ignoreHeadings: "",
 	useRemoteImageUrl: true, //默认启用
 	userApiKey: "",
+	forceFilenameAsTitle: false, // 默认不强制使用文件名
 	enableMultiForums: false,
 	forumPresets: []
 };
@@ -43,7 +45,7 @@ export const DEFAULT_SETTINGS: DiscourseSyncSettings = {
 export class DiscourseSyncSettingsTab extends PluginSettingTab {
 	plugin: PublishToDiscourse;
 	private activeTab: 'forum' | 'publish' = 'forum';
-	
+
 	constructor(app: App, plugin: PublishToDiscourse) {
 		super(app, plugin);
 	}
@@ -71,7 +73,7 @@ export class DiscourseSyncSettingsTab extends PluginSettingTab {
 
 	private createTabNavigation(containerEl: HTMLElement): void {
 		const tabNavEl = containerEl.createDiv('tab-navigation');
-		
+
 		const tabs = [
 			{ id: 'forum', label: '🌐 ' + t('TAB_FORUM'), desc: t('TAB_FORUM_DESC') },
 			{ id: 'publish', label: '📝 ' + t('TAB_PUBLISH'), desc: t('TAB_PUBLISH_DESC') }
@@ -82,13 +84,13 @@ export class DiscourseSyncSettingsTab extends PluginSettingTab {
 			if (this.activeTab === tab.id) {
 				tabEl.addClass('active');
 			}
-			
+
 			const labelEl = tabEl.createDiv('tab-label');
 			labelEl.textContent = tab.label;
-			
+
 			const descEl = tabEl.createDiv('tab-description');
 			descEl.textContent = tab.desc;
-			
+
 			tabEl.onclick = () => {
 				this.activeTab = tab.id as any;
 				this.display();
@@ -108,7 +110,7 @@ export class DiscourseSyncSettingsTab extends PluginSettingTab {
 		// ====== 单论坛配置 ======
 		const basicSection = containerEl.createDiv('discourse-config-section');
 		basicSection.createEl('h2', { text: t('CONFIG_BASIC_TITLE') });
-		basicSection.createEl('p', { 
+		basicSection.createEl('p', {
 			text: t('CONFIG_BASIC_DESC'),
 			cls: 'setting-item-description'
 		});
@@ -124,12 +126,12 @@ export class DiscourseSyncSettingsTab extends PluginSettingTab {
 						this.plugin.settings.baseUrl = value;
 						await this.plugin.saveSettings();
 					})
-		);
+			);
 
 		// 显示当前的 User-API-Key
 		const userApiKey = this.plugin.settings.userApiKey;
 		const hasApiKey = userApiKey && userApiKey.trim() !== '';
-		
+
 		new Setting(basicSection)
 			.setName(t('USER_API_KEY'))
 			.setDesc(hasApiKey ? t('USER_API_KEY_DESC') : t('USER_API_KEY_EMPTY'))
@@ -138,7 +140,7 @@ export class DiscourseSyncSettingsTab extends PluginSettingTab {
 					.setPlaceholder(hasApiKey ? "••••••••••••••••••••••••••••••••" : t('USER_API_KEY_EMPTY'))
 					.setValue(hasApiKey ? userApiKey : "")
 					.setDisabled(true);
-				
+
 				// 设置样式让文本看起来像密码
 				if (hasApiKey) {
 					text.inputEl.style.fontFamily = 'monospace';
@@ -183,7 +185,7 @@ export class DiscourseSyncSettingsTab extends PluginSettingTab {
 		// ====== 获取 User-API-Key ======
 		const apiSection = containerEl.createDiv('discourse-config-section');
 		apiSection.createEl('h2', { text: '🔑 ' + t('CONFIG_API_TITLE') });
-		apiSection.createEl('p', { 
+		apiSection.createEl('p', {
 			text: t('CONFIG_API_DESC'),
 			cls: 'setting-item-description'
 		});
@@ -197,7 +199,7 @@ export class DiscourseSyncSettingsTab extends PluginSettingTab {
 		const step2 = apiSection.createDiv('discourse-step');
 		step2.createDiv('discourse-step-title').textContent = t('STEP_GENERATE_AUTH');
 		step2.createDiv('discourse-step-description').textContent = t('STEP_GENERATE_AUTH_DESC');
-		
+
 		new Setting(step2)
 			.setName(t('GENERATE_AUTH_LINK'))
 			.setDesc(t('GENERATE_AUTH_DESC'))
@@ -207,7 +209,7 @@ export class DiscourseSyncSettingsTab extends PluginSettingTab {
 					const { generateKeyPairAndNonce, saveKeyPair } = await import("./crypto");
 					const pair = generateKeyPairAndNonce();
 					saveKeyPair(pair);
-					const url = `${this.plugin.settings.baseUrl.replace(/\/$/,"")}/user-api-key/new?` +
+					const url = `${this.plugin.settings.baseUrl.replace(/\/$/, "")}/user-api-key/new?` +
 						`application_name=Obsidian%20Discourse%20Plugin&client_id=obsidian-${Date.now()}&scopes=read,write&public_key=${encodeURIComponent(pair.publicKeyPem)}&nonce=${pair.nonce}`;
 					window.open(url, '_blank');
 					new Notice(t('AUTH_LINK_GENERATED'), 8000);
@@ -224,7 +226,7 @@ export class DiscourseSyncSettingsTab extends PluginSettingTab {
 		const step4 = apiSection.createDiv('discourse-step');
 		step4.createDiv('discourse-step-title').textContent = t('STEP_DECRYPT');
 		step4.createDiv('discourse-step-description').textContent = t('STEP_DECRYPT_DESC');
-		
+
 		new Setting(step4)
 			.setName(t('DECRYPT_PAYLOAD'))
 			.setDesc(t('DECRYPT_PAYLOAD_DESC'))
@@ -259,7 +261,7 @@ export class DiscourseSyncSettingsTab extends PluginSettingTab {
 		const step5 = apiSection.createDiv('discourse-step');
 		step5.createDiv('discourse-step-title').textContent = t('STEP_TEST');
 		step5.createDiv('discourse-step-description').textContent = t('STEP_TEST_DESC');
-		
+
 		new Setting(step5)
 			.setName(t('TEST_API_KEY'))
 			.setDesc(t('STEP_TEST_DESC'))
@@ -270,20 +272,20 @@ export class DiscourseSyncSettingsTab extends PluginSettingTab {
 					.onClick(async () => {
 						button.setButtonText("🔄 " + t('TESTING'));
 						button.setDisabled(true);
-						
+
 						const result = await this.plugin.api.testApiKey();
-						
+
 						button.setButtonText("🔍 " + t('TEST_API_KEY'));
 						button.setDisabled(false);
-						
+
 						if (result.success) {
 							new Notice("✅ " + result.message, 5000);
 						} else {
 							// 使用 Obsidian 的默认 Notice 进行错误提示
-							const formattedMessage = typeof result.message === 'string' 
-								? result.message 
+							const formattedMessage = typeof result.message === 'string'
+								? result.message
 								: JSON.stringify(result.message, null, 2);
-							
+
 							new Notice("❌ " + t('API_TEST_FAILED') + "\n" + formattedMessage, 8000);
 						}
 					});
@@ -292,7 +294,7 @@ export class DiscourseSyncSettingsTab extends PluginSettingTab {
 		// ====== 多论坛开关 ======
 		const multiForumSection = containerEl.createDiv('discourse-config-section');
 		multiForumSection.createEl('h2', { text: t('CONFIG_MULTI_FORUM_TITLE') });
-		multiForumSection.createEl('p', { 
+		multiForumSection.createEl('p', {
 			text: t('CONFIG_MULTI_FORUM_DESC'),
 			cls: 'setting-item-description'
 		});
@@ -300,7 +302,7 @@ export class DiscourseSyncSettingsTab extends PluginSettingTab {
 		new Setting(multiForumSection)
 			.setName(t('ENABLE_MULTI_FORUMS'))
 			.setDesc(t('ENABLE_MULTI_FORUMS_DESC'))
-			.addToggle((toggle) => 
+			.addToggle((toggle) =>
 				toggle
 					.setValue(this.plugin.settings.enableMultiForums)
 					.onChange(async (value) => {
@@ -315,7 +317,7 @@ export class DiscourseSyncSettingsTab extends PluginSettingTab {
 		// ====== 多论坛配置 ======
 		const multiForumSection = containerEl.createDiv('discourse-config-section');
 		multiForumSection.createEl('h2', { text: t('CONFIG_MULTI_FORUM_TITLE') });
-		multiForumSection.createEl('p', { 
+		multiForumSection.createEl('p', {
 			text: t('CONFIG_MULTI_FORUM_DESC'),
 			cls: 'setting-item-description'
 		});
@@ -324,7 +326,7 @@ export class DiscourseSyncSettingsTab extends PluginSettingTab {
 		new Setting(multiForumSection)
 			.setName(t('ENABLE_MULTI_FORUMS'))
 			.setDesc(t('ENABLE_MULTI_FORUMS_DESC'))
-			.addToggle((toggle) => 
+			.addToggle((toggle) =>
 				toggle
 					.setValue(this.plugin.settings.enableMultiForums)
 					.onChange(async (value) => {
@@ -363,7 +365,7 @@ export class DiscourseSyncSettingsTab extends PluginSettingTab {
 		// ====== 发布选项 ======
 		const publishSection = containerEl.createDiv('discourse-config-section');
 		publishSection.createEl('h2', { text: t('CONFIG_PUBLISH_TITLE') });
-		publishSection.createEl('p', { 
+		publishSection.createEl('p', {
 			text: t('CONFIG_PUBLISH_DESC'),
 			cls: 'setting-item-description'
 		});
@@ -371,7 +373,7 @@ export class DiscourseSyncSettingsTab extends PluginSettingTab {
 		new Setting(publishSection)
 			.setName(t('SKIP_H1'))
 			.setDesc(t('SKIP_H1_DESC'))
-			.addToggle((toggle) => 
+			.addToggle((toggle) =>
 				toggle
 					.setValue(this.plugin.settings.skipH1)
 					.onChange(async (value) => {
@@ -379,11 +381,11 @@ export class DiscourseSyncSettingsTab extends PluginSettingTab {
 						await this.plugin.saveSettings();
 					})
 			);
-			
+
 		new Setting(publishSection)
 			.setName(t('CONVERT_HIGHLIGHT'))
 			.setDesc(t('CONVERT_HIGHLIGHT_DESC'))
-			.addToggle((toggle) => 
+			.addToggle((toggle) =>
 				toggle
 					.setValue(this.plugin.settings.convertHighlight)
 					.onChange(async (value) => {
@@ -408,7 +410,7 @@ export class DiscourseSyncSettingsTab extends PluginSettingTab {
 		new Setting(publishSection)
 			.setName(t('USE_REMOTE_IMAGE_URL'))
 			.setDesc(t('USE_REMOTE_IMAGE_URL_DESC'))
-			.addToggle((toggle) => 
+			.addToggle((toggle) =>
 				toggle
 					.setValue(this.plugin.settings.useRemoteImageUrl)
 					.onChange(async (value) => {
@@ -420,7 +422,7 @@ export class DiscourseSyncSettingsTab extends PluginSettingTab {
 
 	private displayForumPreset(container: HTMLElement, preset: ForumPreset, index: number): void {
 		const presetContainer = container.createDiv('forum-preset-item');
-		
+
 		// 预设名称和状态
 		const headerEl = presetContainer.createDiv('preset-header');
 
@@ -428,13 +430,13 @@ export class DiscourseSyncSettingsTab extends PluginSettingTab {
 
 		const nameEl = nameContainer.createDiv('preset-name');
 		nameEl.textContent = `${preset.name}`;
-		
+
 		// 预设链接（单独显示 & 可点击）
 		const urlEl = nameContainer.createDiv("preset-url");
 		urlEl.textContent = preset.baseUrl;
 		urlEl.title = preset.baseUrl;
 		urlEl.onclick = () => {
-		  window.open(preset.baseUrl, "_blank");
+			window.open(preset.baseUrl, "_blank");
 		};
 
 		// 当前选中状态
@@ -488,16 +490,16 @@ export class DiscourseSyncSettingsTab extends PluginSettingTab {
 
 		// 操作按钮
 		const actionsEl = headerEl.createDiv('preset-actions');
-		
+
 		// 编辑按钮
-		const editBtn = actionsEl.createEl('button', { 
+		const editBtn = actionsEl.createEl('button', {
 			text: '✏️ ' + t('EDIT'),
 			cls: 'preset-action-btn'
 		});
 		editBtn.onclick = () => this.editForumPreset(index);
 
 		// 删除按钮
-		const deleteBtn = actionsEl.createEl('button', { 
+		const deleteBtn = actionsEl.createEl('button', {
 			text: '🗑️ ' + t('DELETE'),
 			cls: 'preset-action-btn delete'
 		});
@@ -505,7 +507,7 @@ export class DiscourseSyncSettingsTab extends PluginSettingTab {
 
 		// 设为默认按钮
 		if (this.plugin.settings.selectedForumId !== preset.id) {
-			const setDefaultBtn = actionsEl.createEl('button', { 
+			const setDefaultBtn = actionsEl.createEl('button', {
 				text: '⭐ ' + t('SET_DEFAULT'),
 				cls: 'preset-action-btn'
 			});
@@ -520,10 +522,10 @@ export class DiscourseSyncSettingsTab extends PluginSettingTab {
 			baseUrl: '',
 			userApiKey: '',
 		};
-		
+
 		const editModal = new ForumPresetEditModal(this.app, newPreset, true);
 		const result = await editModal.showAndWait();
-		
+
 		if (result) {
 			this.plugin.settings.forumPresets.push(result);
 			await this.plugin.saveSettings();
@@ -533,10 +535,10 @@ export class DiscourseSyncSettingsTab extends PluginSettingTab {
 
 	private async editForumPreset(index: number): Promise<void> {
 		const preset = this.plugin.settings.forumPresets[index];
-		
+
 		const editModal = new ForumPresetEditModal(this.app, preset);
 		const result = await editModal.showAndWait();
-		
+
 		if (result) {
 			this.plugin.settings.forumPresets[index] = result;
 			await this.plugin.saveSettings();
@@ -551,7 +553,7 @@ export class DiscourseSyncSettingsTab extends PluginSettingTab {
 			if (this.plugin.settings.selectedForumId === preset.id) {
 				this.plugin.settings.selectedForumId = undefined;
 			}
-			
+
 			this.plugin.settings.forumPresets.splice(index, 1);
 			this.plugin.saveSettings();
 			this.display();

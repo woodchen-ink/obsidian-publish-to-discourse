@@ -12,6 +12,8 @@ export default {
     'IGNORE_HEADINGS_PLACEHOLDER': 'e.g., Draft, Local (no need for #)',
     'USE_REMOTE_IMAGE_URL': 'Use Remote Image URLs',
     'USE_REMOTE_IMAGE_URL_DESC': 'Replace local image links with remote URLs from Discourse after publishing',
+    'FORCE_FILENAME_AS_TITLE': 'Force Use Filename as Title',
+    'FORCE_FILENAME_AS_TITLE_DESC': 'Default: Use front matter title if exists, otherwise use filename. When enabled: Always use filename as post title, ignoring front matter title completely',
     'TEST_API_KEY': 'Test Connection',
     'TESTING': 'Testing...',
     'API_TEST_SUCCESS': 'Connection successful! API key is valid',

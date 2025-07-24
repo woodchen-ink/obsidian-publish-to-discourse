@@ -291,7 +291,7 @@ export default class PublishToDiscourse extends Plugin implements PluginInterfac
 				result = await this.api.updatePost(
 					postId,
 					topicId,
-					(frontMatter?.title ? frontMatter?.title : this.activeFile.name),
+					(this.settings.forceFilenameAsTitle ? this.activeFile.name : (frontMatter?.title ? frontMatter?.title : this.activeFile.name)),
 					content,
 					this.settings.category,
 					currentTags
@@ -309,7 +309,7 @@ export default class PublishToDiscourse extends Plugin implements PluginInterfac
 			} else {
 				// 创建新帖子
 				result = await this.api.createPost(
-					(frontMatter?.title ? frontMatter?.title : this.activeFile.name),
+					(this.settings.forceFilenameAsTitle ? this.activeFile.name : (frontMatter?.title ? frontMatter?.title : this.activeFile.name)),
 					content,
 					this.settings.category,
 					currentTags
