@@ -418,6 +418,18 @@ export class DiscourseSyncSettingsTab extends PluginSettingTab {
 						await this.plugin.saveSettings();
 					})
 			);
+
+		new Setting(publishSection)
+			.setName(t('FORCE_FILENAME_AS_TITLE'))
+			.setDesc(t('FORCE_FILENAME_AS_TITLE_DESC'))
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.forceFilenameAsTitle)
+					.onChange(async (value) => {
+						this.plugin.settings.forceFilenameAsTitle = value;
+						await this.plugin.saveSettings();
+					})
+			);
 	}
 
 	private displayForumPreset(container: HTMLElement, preset: ForumPreset, index: number): void {
