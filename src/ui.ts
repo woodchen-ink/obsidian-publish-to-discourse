@@ -20,11 +20,11 @@ export class SelectCategoryModal extends Modal {
 
     onOpen() {
         // 添加模态框基础样式
-        this.modalEl.addClass('mod-discourse-sync');
+        this.modalEl.addClass('mod-ptd');
         
         const { contentEl } = this;
         contentEl.empty();
-        contentEl.addClass('discourse-sync-modal');
+        contentEl.addClass('ptd-modal');
         
         const isUpdate = this.plugin.activeFile.postId !== undefined;
         contentEl.createEl('h1', { text: isUpdate ? t('UPDATE_POST') : t('PUBLISH_TO_DISCOURSE') });
@@ -329,7 +329,7 @@ export class CategoryConflictModal extends Modal {
     onOpen() {
         const { contentEl } = this;
         contentEl.empty();
-        contentEl.addClass('discourse-category-conflict-modal');
+        contentEl.addClass('ptd-category-conflict-modal');
 
         // 标题
         contentEl.createEl('h2', { text: t('CATEGORY_CONFLICT_TITLE') });
@@ -406,7 +406,7 @@ export class ForumSelectionModal extends Modal {
     onOpen() {
         const { contentEl } = this;
         contentEl.empty();
-        contentEl.addClass('discourse-forum-selection-modal');
+        contentEl.addClass('ptd-forum-selection-modal');
 
         // 标题
         contentEl.createEl('h2', { text: t('SELECT_FORUM_TITLE') });
@@ -497,7 +497,7 @@ export class ForumPresetEditModal extends Modal {
     onOpen() {
         const { contentEl } = this;
         contentEl.empty();
-        contentEl.addClass('discourse-preset-edit-modal');
+        contentEl.addClass('ptd-preset-edit-modal');
 
         // 标题
         contentEl.createEl('h2', { 

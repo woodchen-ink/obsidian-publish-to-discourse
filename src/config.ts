@@ -58,7 +58,7 @@ export class DiscourseSyncSettingsTab extends PluginSettingTab {
 		this.createTabNavigation(containerEl);
 
 		// 创建Tab内容容器
-		const tabContentEl = containerEl.createDiv('tab-content');
+		const tabContentEl = containerEl.createDiv('ptd-tab-content');
 
 		// 根据当前活跃Tab显示对应内容
 		switch (this.activeTab) {
@@ -72,7 +72,7 @@ export class DiscourseSyncSettingsTab extends PluginSettingTab {
 	}
 
 	private createTabNavigation(containerEl: HTMLElement): void {
-		const tabNavEl = containerEl.createDiv('tab-navigation');
+		const tabNavEl = containerEl.createDiv('ptd-tab-navigation');
 
 		const tabs = [
 			{ id: 'forum', label: '🌐 ' + t('TAB_FORUM'), desc: t('TAB_FORUM_DESC') },
@@ -108,7 +108,7 @@ export class DiscourseSyncSettingsTab extends PluginSettingTab {
 
 	private displaySingleForumSettings(containerEl: HTMLElement): void {
 		// ====== 单论坛配置 ======
-		const basicSection = containerEl.createDiv('discourse-config-section');
+		const basicSection = containerEl.createDiv('ptd-config-section');
 		basicSection.createEl('h2', { text: t('CONFIG_BASIC_TITLE') });
 		basicSection.createEl('p', {
 			text: t('CONFIG_BASIC_DESC'),
@@ -174,7 +174,7 @@ export class DiscourseSyncSettingsTab extends PluginSettingTab {
 						.setTooltip("跳转到获取 API Key 的流程")
 						.onClick(() => {
 							// 滚动到 API Key 获取区域
-							const apiSection = containerEl.querySelector('.discourse-config-section:nth-child(2)');
+							const apiSection = containerEl.querySelector('.ptd-config-section:nth-child(2)');
 							if (apiSection) {
 								apiSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
 							}
@@ -183,7 +183,7 @@ export class DiscourseSyncSettingsTab extends PluginSettingTab {
 			});
 
 		// ====== 获取 User-API-Key ======
-		const apiSection = containerEl.createDiv('discourse-config-section');
+		const apiSection = containerEl.createDiv('ptd-config-section');
 		apiSection.createEl('h2', { text: '🔑 ' + t('CONFIG_API_TITLE') });
 		apiSection.createEl('p', {
 			text: t('CONFIG_API_DESC'),
@@ -191,14 +191,14 @@ export class DiscourseSyncSettingsTab extends PluginSettingTab {
 		});
 
 		// 步骤 1: 确认论坛地址
-		const step1 = apiSection.createDiv('discourse-step');
-		step1.createDiv('discourse-step-title').textContent = t('STEP_VERIFY_URL');
-		step1.createDiv('discourse-step-description').textContent = t('STEP_VERIFY_URL_DESC');
+		const step1 = apiSection.createDiv('ptd-step');
+		step1.createDiv('ptd-step-title').textContent = t('STEP_VERIFY_URL');
+		step1.createDiv('ptd-step-description').textContent = t('STEP_VERIFY_URL_DESC');
 
 		// 步骤 2: 生成授权链接
-		const step2 = apiSection.createDiv('discourse-step');
-		step2.createDiv('discourse-step-title').textContent = t('STEP_GENERATE_AUTH');
-		step2.createDiv('discourse-step-description').textContent = t('STEP_GENERATE_AUTH_DESC');
+		const step2 = apiSection.createDiv('ptd-step');
+		step2.createDiv('ptd-step-title').textContent = t('STEP_GENERATE_AUTH');
+		step2.createDiv('ptd-step-description').textContent = t('STEP_GENERATE_AUTH_DESC');
 
 		new Setting(step2)
 			.setName(t('GENERATE_AUTH_LINK'))
@@ -218,14 +218,14 @@ export class DiscourseSyncSettingsTab extends PluginSettingTab {
 			});
 
 		// 步骤 3: 完成授权并复制 Payload
-		const step3 = apiSection.createDiv('discourse-step');
-		step3.createDiv('discourse-step-title').textContent = t('STEP_AUTHORIZE');
-		step3.createDiv('discourse-step-description').textContent = t('STEP_AUTHORIZE_DESC');
+		const step3 = apiSection.createDiv('ptd-step');
+		step3.createDiv('ptd-step-title').textContent = t('STEP_AUTHORIZE');
+		step3.createDiv('ptd-step-description').textContent = t('STEP_AUTHORIZE_DESC');
 
 		// 步骤 4: 解密并保存 User-API-Key
-		const step4 = apiSection.createDiv('discourse-step');
-		step4.createDiv('discourse-step-title').textContent = t('STEP_DECRYPT');
-		step4.createDiv('discourse-step-description').textContent = t('STEP_DECRYPT_DESC');
+		const step4 = apiSection.createDiv('ptd-step');
+		step4.createDiv('ptd-step-title').textContent = t('STEP_DECRYPT');
+		step4.createDiv('ptd-step-description').textContent = t('STEP_DECRYPT_DESC');
 
 		new Setting(step4)
 			.setName(t('DECRYPT_PAYLOAD'))
@@ -258,9 +258,9 @@ export class DiscourseSyncSettingsTab extends PluginSettingTab {
 			});
 
 		// 步骤 5: 测试连接
-		const step5 = apiSection.createDiv('discourse-step');
-		step5.createDiv('discourse-step-title').textContent = t('STEP_TEST');
-		step5.createDiv('discourse-step-description').textContent = t('STEP_TEST_DESC');
+		const step5 = apiSection.createDiv('ptd-step');
+		step5.createDiv('ptd-step-title').textContent = t('STEP_TEST');
+		step5.createDiv('ptd-step-description').textContent = t('STEP_TEST_DESC');
 
 		new Setting(step5)
 			.setName(t('TEST_API_KEY'))
@@ -292,7 +292,7 @@ export class DiscourseSyncSettingsTab extends PluginSettingTab {
 			});
 
 		// ====== 多论坛开关 ======
-		const multiForumSection = containerEl.createDiv('discourse-config-section');
+		const multiForumSection = containerEl.createDiv('ptd-config-section');
 		multiForumSection.createEl('h2', { text: t('CONFIG_MULTI_FORUM_TITLE') });
 		multiForumSection.createEl('p', {
 			text: t('CONFIG_MULTI_FORUM_DESC'),
@@ -315,7 +315,7 @@ export class DiscourseSyncSettingsTab extends PluginSettingTab {
 
 	private displayMultiForumSettings(containerEl: HTMLElement): void {
 		// ====== 多论坛配置 ======
-		const multiForumSection = containerEl.createDiv('discourse-config-section');
+		const multiForumSection = containerEl.createDiv('ptd-config-section');
 		multiForumSection.createEl('h2', { text: t('CONFIG_MULTI_FORUM_TITLE') });
 		multiForumSection.createEl('p', {
 			text: t('CONFIG_MULTI_FORUM_DESC'),
@@ -363,7 +363,7 @@ export class DiscourseSyncSettingsTab extends PluginSettingTab {
 
 	private displayPublishSettings(containerEl: HTMLElement): void {
 		// ====== 发布选项 ======
-		const publishSection = containerEl.createDiv('discourse-config-section');
+		const publishSection = containerEl.createDiv('ptd-config-section');
 		publishSection.createEl('h2', { text: t('CONFIG_PUBLISH_TITLE') });
 		publishSection.createEl('p', {
 			text: t('CONFIG_PUBLISH_DESC'),

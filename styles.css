@@ -8,7 +8,7 @@ If your plugin does not need CSS, delete this file.
 */
 
 /* Settings Page Styles */
-.discourse-config-section {
+.ptd-config-section {
   margin: 20px 0;
   padding: var(--size-4-4);
   border: 1px solid var(--background-modifier-border);
@@ -16,7 +16,7 @@ If your plugin does not need CSS, delete this file.
   background: var(--background-secondary);
 }
 
-.discourse-config-section h2 {
+.ptd-config-section h2 {
   margin: 0 0 var(--size-2-3) 0;
   color: var(--text-accent);
   border-bottom: 2px solid var(--interactive-accent);
@@ -25,7 +25,7 @@ If your plugin does not need CSS, delete this file.
   font-weight: var(--font-weight-bold);
 }
 
-.discourse-step {
+.ptd-step {
   margin: var(--size-2-3) 0;
   padding: var(--size-2-3);
   border-left: 3px solid var(--interactive-accent);
@@ -33,21 +33,21 @@ If your plugin does not need CSS, delete this file.
   border-radius: 0 var(--radius-s) var(--radius-s) 0;
 }
 
-.discourse-step-title {
+.ptd-step-title {
   font-weight: var(--font-weight-bold);
   color: var(--text-accent);
   margin-bottom: var(--size-2-1);
   font-size: var(--font-ui-small);
 }
 
-.discourse-step-description {
+.ptd-step-description {
   color: var(--text-muted);
   font-size: var(--font-ui-smaller);
   margin-bottom: var(--size-2-2);
 }
 
 /* Basic Modal Style Override */
-.modal.mod-discourse-sync {
+.modal.mod-ptd {
   max-width: 500px;
   max-height: 90vh;
   background-color: var(--background-primary);
@@ -59,7 +59,7 @@ If your plugin does not need CSS, delete this file.
 }
 
 /* Content Area Style */
-.discourse-sync-modal {
+.ptd-modal {
   padding: 24px;
   width: 100%;
   height: 100%;
@@ -69,19 +69,19 @@ If your plugin does not need CSS, delete this file.
 }
 
 /* Form Area */
-.discourse-sync-modal .form-area {
+.ptd-modal .form-area {
   flex-grow: 1;
   min-height: 0;
   margin-bottom: 16px;
 }
 
 /* Button Area Fixed at Bottom */
-.discourse-sync-modal .button-area {
+.ptd-modal .button-area {
   flex-shrink: 0;
   margin-top: auto;
 }
 
-.discourse-sync-modal h1 {
+.ptd-modal h1 {
   margin: 0 0 24px 0;
   font-size: 1.5em;
   font-weight: 600;
@@ -89,14 +89,14 @@ If your plugin does not need CSS, delete this file.
 }
 
 /* Common Form Container Style */
-.discourse-sync-modal .select-container,
-.discourse-sync-modal .tag-container {
+.ptd-modal .select-container,
+.ptd-modal .tag-container {
   margin-bottom: 24px;
   padding: 0;  /* Remove padding */
 }
 
-.discourse-sync-modal .select-container label,
-.discourse-sync-modal .tag-container label {
+.ptd-modal .select-container label,
+.ptd-modal .tag-container label {
   display: block;
   margin-bottom: 8px;
   font-weight: 500;
@@ -104,8 +104,8 @@ If your plugin does not need CSS, delete this file.
 }
 
 /* Input and Selector Style */
-.discourse-sync-modal select,
-.discourse-sync-modal .tag-select-area {
+.ptd-modal select,
+.ptd-modal .tag-select-area {
   width: 100%;
   padding: 8px 12px;
   border: 2px solid var(--background-modifier-border);
@@ -117,23 +117,23 @@ If your plugin does not need CSS, delete this file.
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.discourse-sync-modal select {
+.ptd-modal select {
   height: 42px;
   line-height: 1.5;
   cursor: pointer;
 }
 
-.discourse-sync-modal select:hover {
+.ptd-modal select:hover {
   border-color: var(--background-modifier-border-hover);
 }
 
-.discourse-sync-modal select:focus {
+.ptd-modal select:focus {
   border-color: var(--interactive-accent) !important;
   outline: none;
   box-shadow: 0 0 0 2px var(--interactive-accent-hover);
 }
 
-.discourse-sync-modal .submit-button {
+.ptd-modal .submit-button {
   width: 100%;
   padding: 10px 16px;
   border-radius: var(--radius-m);
@@ -147,7 +147,7 @@ If your plugin does not need CSS, delete this file.
 }
 
 /* 确保按钮在所有主题下都可见 */
-.discourse-sync-modal .submit-button {
+.ptd-modal .submit-button {
   /* 强制设置具体的样式值，避免被主题覆盖 */
   background-color: var(--interactive-accent) !important;
   color: var(--text-on-accent) !important;
@@ -156,13 +156,13 @@ If your plugin does not need CSS, delete this file.
   filter: contrast(1.1) saturate(1.1);
 }
 
-.discourse-sync-modal .submit-button:hover {
+.ptd-modal .submit-button:hover {
   background-color: var(--interactive-accent-hover) !important;
   border-color: var(--interactive-accent-hover) !important;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
 }
 
-.discourse-sync-modal .submit-button:disabled {
+.ptd-modal .submit-button:disabled {
   background-color: var(--background-modifier-border) !important;
   color: var(--text-muted) !important;
   border-color: var(--background-modifier-border) !important;
@@ -176,7 +176,7 @@ If your plugin does not need CSS, delete this file.
 
 
 /* Tag Select Area Style */
-.discourse-sync-modal .tag-select-area {
+.ptd-modal .tag-select-area {
   padding: 8px;
   display: flex;
   flex-direction: column;
@@ -184,7 +184,7 @@ If your plugin does not need CSS, delete this file.
   position: relative;
 }
 
-.discourse-sync-modal .selected-tags {
+.ptd-modal .selected-tags {
   display: none;  /* Hidden by default */
   flex-wrap: wrap;
   gap: 6px;
@@ -192,11 +192,11 @@ If your plugin does not need CSS, delete this file.
   min-height: 28px;
 }
 
-.discourse-sync-modal .selected-tags:not(:empty) {
+.ptd-modal .selected-tags:not(:empty) {
   display: flex;  /* Show when has content */
 }
 
-.discourse-sync-modal .tag {
+.ptd-modal .tag {
   display: inline-flex;
   align-items: center;
   background-color: var(--interactive-accent);
@@ -213,13 +213,13 @@ If your plugin does not need CSS, delete this file.
   white-space: nowrap;
 }
 
-.discourse-sync-modal .tag:hover {
+.ptd-modal .tag:hover {
   background-color: var(--interactive-accent-hover);
   transform: translateY(-1px);
   box-shadow: var(--shadow-s);
 }
 
-.discourse-sync-modal .remove-tag {
+.ptd-modal .remove-tag {
   margin-left: 6px;
   cursor: pointer;
   font-weight: bold;
@@ -236,13 +236,13 @@ If your plugin does not need CSS, delete this file.
   background-color: rgba(255, 255, 255, 0.2);
 }
 
-.discourse-sync-modal .remove-tag:hover {
+.ptd-modal .remove-tag:hover {
   opacity: 1;
   background-color: rgba(255, 255, 255, 0.3);
 }
 
 /* 默认标签网格样式 */
-.discourse-sync-modal .default-tags-grid {
+.ptd-modal .default-tags-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
   gap: 6px;
@@ -253,7 +253,7 @@ If your plugin does not need CSS, delete this file.
   border: 1px solid var(--background-modifier-border);
 }
 
-.discourse-sync-modal .grid-tag {
+.ptd-modal .grid-tag {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -273,7 +273,7 @@ If your plugin does not need CSS, delete this file.
   white-space: nowrap;
 }
 
-.discourse-sync-modal .grid-tag:hover {
+.ptd-modal .grid-tag:hover {
   background-color: var(--interactive-accent);
   color: var(--text-on-accent);
   border-color: var(--interactive-accent);
@@ -281,12 +281,12 @@ If your plugin does not need CSS, delete this file.
   box-shadow: var(--shadow-s);
 }
 
-.discourse-sync-modal .grid-tag:active {
+.ptd-modal .grid-tag:active {
   transform: translateY(0);
   box-shadow: var(--shadow-xs);
 }
 
-.discourse-sync-modal input[type="text"] {
+.ptd-modal input[type="text"] {
   width: 100%;
   padding: 8px;
   border: none;
@@ -297,30 +297,30 @@ If your plugin does not need CSS, delete this file.
   transition: background-color 0.2s ease;
 }
 
-.discourse-sync-modal input[type="text"]:focus {
+.ptd-modal input[type="text"]:focus {
   background-color: var(--background-modifier-hover);
   border-radius: var(--radius-s);
 }
 
-.discourse-sync-modal input[type="text"]::placeholder {
+.ptd-modal input[type="text"]::placeholder {
   color: var(--text-muted);
   opacity: 0.8;
 }
 
-.discourse-sync-modal .suggestions-container {
+.ptd-modal .suggestions-container {
   max-height: 250px;
   overflow-y: auto;
   border-bottom: 1px solid var(--background-modifier-border);
 }
 
 /* Tag Input Container */
-.discourse-sync-modal .tag-input-container {
+.ptd-modal .tag-input-container {
   position: relative;
   width: 100%;
 }
 
 /* Tag Suggestion Dropdown */
-.discourse-sync-modal .tag-suggestions {
+.ptd-modal .tag-suggestions {
   position: fixed;
   background-color: var(--background-primary);
   border: 1px solid var(--background-modifier-border);
@@ -334,12 +334,12 @@ If your plugin does not need CSS, delete this file.
   backdrop-filter: blur(8px);
 }
 
-.discourse-sync-modal .tag-suggestions:not(:empty) {
+.ptd-modal .tag-suggestions:not(:empty) {
   display: block;  /* Show when has content */
 }
 
 /* Tag Suggestion Item */
-.discourse-sync-modal .tag-suggestion {
+.ptd-modal .tag-suggestion {
   padding: 8px 12px;
   cursor: pointer;
   color: var(--text-normal);
@@ -355,39 +355,39 @@ If your plugin does not need CSS, delete this file.
   margin: 2px 4px;
 }
 
-.discourse-sync-modal .tag-suggestion:hover {
+.ptd-modal .tag-suggestion:hover {
   background-color: var(--background-modifier-hover);
   color: var(--text-accent);
   transform: translateX(2px);
 }
 
-.discourse-sync-modal .tag-suggestion:active {
+.ptd-modal .tag-suggestion:active {
   background-color: var(--interactive-accent);
   color: var(--text-on-accent);
 }
 
 /* Tag Suggestion Scrollbar Style */
-.discourse-sync-modal .tag-suggestions::-webkit-scrollbar {
+.ptd-modal .tag-suggestions::-webkit-scrollbar {
   width: 6px;
 }
 
-.discourse-sync-modal .tag-suggestions::-webkit-scrollbar-track {
+.ptd-modal .tag-suggestions::-webkit-scrollbar-track {
   background: var(--background-secondary);
   border-radius: var(--radius-s);
 }
 
-.discourse-sync-modal .tag-suggestions::-webkit-scrollbar-thumb {
+.ptd-modal .tag-suggestions::-webkit-scrollbar-thumb {
   background-color: var(--background-modifier-border);
   border-radius: var(--radius-s);
   transition: background-color 0.2s ease;
 }
 
-.discourse-sync-modal .tag-suggestions::-webkit-scrollbar-thumb:hover {
+.ptd-modal .tag-suggestions::-webkit-scrollbar-thumb:hover {
   background-color: var(--interactive-accent);
 }
 
 /* Remove tag-container z-index to avoid interference */
-.discourse-sync-modal .tag-container {
+.ptd-modal .tag-container {
   position: relative;
 }
 
@@ -409,14 +409,14 @@ If your plugin does not need CSS, delete this file.
 }
 
 /* Category Conflict Modal Styles */
-.discourse-category-conflict-modal {
+.ptd-category-conflict-modal {
   padding: 24px;
   max-width: 600px;
   background-color: var(--background-primary);
   border-radius: var(--radius-l);
 }
 
-.discourse-category-conflict-modal h2 {
+.ptd-category-conflict-modal h2 {
   margin: 0 0 16px 0;
   font-size: 1.4em;
   font-weight: 600;
@@ -424,24 +424,24 @@ If your plugin does not need CSS, delete this file.
   text-align: center;
 }
 
-.discourse-category-conflict-modal .conflict-description {
+.ptd-category-conflict-modal .conflict-description {
   margin-bottom: 24px;
   text-align: center;
 }
 
-.discourse-category-conflict-modal .conflict-description p {
+.ptd-category-conflict-modal .conflict-description p {
   margin: 0;
   color: var(--text-muted);
   line-height: 1.5;
 }
 
-.discourse-category-conflict-modal .category-comparison {
+.ptd-category-conflict-modal .category-comparison {
   display: flex;
   gap: 16px;
   margin-bottom: 24px;
 }
 
-.discourse-category-conflict-modal .category-option {
+.ptd-category-conflict-modal .category-option {
   flex: 1;
   padding: 16px;
   border: 2px solid var(--background-modifier-border);
@@ -450,37 +450,37 @@ If your plugin does not need CSS, delete this file.
   background-color: var(--background-secondary);
 }
 
-.discourse-category-conflict-modal .category-option.local {
+.ptd-category-conflict-modal .category-option.local {
   border-color: var(--color-blue);
   background-color: var(--color-blue-hover);
 }
 
-.discourse-category-conflict-modal .category-option.remote {
+.ptd-category-conflict-modal .category-option.remote {
   border-color: var(--color-orange);
   background-color: var(--color-orange-hover);
 }
 
-.discourse-category-conflict-modal .category-option h3 {
+.ptd-category-conflict-modal .category-option h3 {
   margin: 0 0 8px 0;
   font-size: 1.1em;
   font-weight: 600;
   color: var(--text-normal);
 }
 
-.discourse-category-conflict-modal .category-name {
+.ptd-category-conflict-modal .category-name {
   font-size: 14px;
   color: var(--text-muted);
   word-break: break-all;
 }
 
-.discourse-category-conflict-modal .button-area {
+.ptd-category-conflict-modal .button-area {
   display: flex;
   gap: 12px;
   justify-content: center;
 }
 
-.discourse-category-conflict-modal .keep-local-button,
-.discourse-category-conflict-modal .use-remote-button {
+.ptd-category-conflict-modal .keep-local-button,
+.ptd-category-conflict-modal .use-remote-button {
   flex: 1;
   max-width: 180px;
   padding: 10px 16px;
@@ -493,25 +493,25 @@ If your plugin does not need CSS, delete this file.
   box-shadow: var(--shadow-s);
 }
 
-.discourse-category-conflict-modal .keep-local-button {
+.ptd-category-conflict-modal .keep-local-button {
   background-color: var(--color-blue);
   color: white;
   border: 1px solid var(--color-blue);
 }
 
-.discourse-category-conflict-modal .keep-local-button:hover {
+.ptd-category-conflict-modal .keep-local-button:hover {
   background-color: var(--color-blue-hover);
   border-color: var(--color-blue-hover);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
-.discourse-category-conflict-modal .use-remote-button {
+.ptd-category-conflict-modal .use-remote-button {
   background-color: var(--color-orange);
   color: white;
   border: 1px solid var(--color-orange);
 }
 
-.discourse-category-conflict-modal .use-remote-button:hover {
+.ptd-category-conflict-modal .use-remote-button:hover {
   background-color: var(--color-orange-hover);
   border-color: var(--color-orange-hover);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
@@ -519,29 +519,29 @@ If your plugin does not need CSS, delete this file.
 
 /* 响应式设计 */
 @media (max-width: 600px) {
-  .discourse-category-conflict-modal .category-comparison {
+  .ptd-category-conflict-modal .category-comparison {
     flex-direction: column;
   }
   
-  .discourse-category-conflict-modal .button-area {
+  .ptd-category-conflict-modal .button-area {
     flex-direction: column;
   }
   
-  .discourse-category-conflict-modal .keep-local-button,
-  .discourse-category-conflict-modal .use-remote-button {
+  .ptd-category-conflict-modal .keep-local-button,
+  .ptd-category-conflict-modal .use-remote-button {
     max-width: none;
   }
 }
 
 /* Update Notice Modal Styles */
-.discourse-update-notice-modal {
+.ptd-update-notice-modal {
   padding: var(--size-4-4);
   max-width: 500px;
   background-color: var(--background-primary);
   border-radius: var(--radius-l);
 }
 
-.discourse-update-notice-modal .update-notice-title {
+.ptd-update-notice-modal .update-notice-title {
   margin: 0 0 var(--size-2-3) 0;
   font-size: var(--font-text-size);
   font-weight: var(--font-weight-bold);
@@ -549,25 +549,25 @@ If your plugin does not need CSS, delete this file.
   text-align: center;
 }
 
-.discourse-update-notice-modal .update-notice-message {
+.ptd-update-notice-modal .update-notice-message {
   margin-bottom: var(--size-4-4);
   text-align: left;
 }
 
-.discourse-update-notice-modal .update-notice-message p {
+.ptd-update-notice-modal .update-notice-message p {
   margin: 0;
   color: var(--text-normal);
   line-height: var(--line-height-normal);
   font-size: var(--font-ui-medium);
 }
 
-.discourse-update-notice-modal .update-notice-buttons {
+.ptd-update-notice-modal .update-notice-buttons {
   display: flex;
   gap: var(--size-2-3);
   justify-content: center;
 }
 
-.discourse-update-notice-modal .update-notice-buttons button {
+.ptd-update-notice-modal .update-notice-buttons button {
   flex: 1;
   max-width: 150px;
   padding: var(--size-2-2) var(--size-2-4);
@@ -582,23 +582,23 @@ If your plugin does not need CSS, delete this file.
   color: var(--text-normal);
 }
 
-.discourse-update-notice-modal .update-notice-buttons button:hover {
+.ptd-update-notice-modal .update-notice-buttons button:hover {
   background-color: var(--background-modifier-hover);
 }
 
-.discourse-update-notice-modal .update-notice-buttons button.mod-cta {
+.ptd-update-notice-modal .update-notice-buttons button.mod-cta {
   background-color: var(--interactive-accent);
   color: var(--text-on-accent);
   border-color: var(--interactive-accent);
 }
 
-.discourse-update-notice-modal .update-notice-buttons button.mod-cta:hover {
+.ptd-update-notice-modal .update-notice-buttons button.mod-cta:hover {
   background-color: var(--interactive-accent-hover);
   border-color: var(--interactive-accent-hover);
 }
 
 /* Tab Navigation Styles */
-.tab-navigation {
+.ptd-tab-navigation {
   display: flex;
   gap: 8px;
   margin-bottom: 20px;
@@ -657,7 +657,7 @@ If your plugin does not need CSS, delete this file.
   line-height: 1.4;
 }
 
-.tab-content {
+.ptd-tab-content {
   animation: fadeIn 0.3s ease;
 }
 
@@ -769,7 +769,7 @@ If your plugin does not need CSS, delete this file.
 }
 
 /* Forum Selection Modal Styles */
-.discourse-forum-selection-modal {
+.ptd-forum-selection-modal {
   max-width: 600px;
 }
 
@@ -885,7 +885,7 @@ If your plugin does not need CSS, delete this file.
 }
 
 /* Forum Preset Edit Modal Styles */
-.discourse-preset-edit-modal {
+.ptd-preset-edit-modal {
   max-width: 500px;
 }
 
