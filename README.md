@@ -72,7 +72,7 @@
 
 If this plugin has been helpful to you, feel free to buy me a coffee. Of course, using it is the greatest support you can give me.
 
-赞赏记录/Sponsorship Record: <https://woodchen.ink/sponsorship>
+**赞赏记录/Sponsorship Record**: <https://woodchen.ink/sponsorship>
 
 
 | 微信赞赏 | 支付宝 |
