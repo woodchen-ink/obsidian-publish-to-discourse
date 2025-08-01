@@ -22,6 +22,7 @@ export interface DiscourseSyncSettings {
 	userApiKey: string;
 	lastNotifiedVersion?: string; // 记录上次显示更新通知的版本
 	forceFilenameAsTitle: boolean; // 强制使用文件名作为标题
+	autoOpenAfterPublish: boolean; // 发布后自动打开帖子链接
 
 	// 多论坛配置
 	enableMultiForums: boolean; // 是否启用多论坛功能
@@ -38,6 +39,7 @@ export const DEFAULT_SETTINGS: DiscourseSyncSettings = {
 	useRemoteImageUrl: true, //默认启用
 	userApiKey: "",
 	forceFilenameAsTitle: false, // 默认不强制使用文件名
+	autoOpenAfterPublish: false, // 默认关闭自动打开
 	enableMultiForums: false,
 	forumPresets: []
 };
@@ -427,6 +429,18 @@ export class DiscourseSyncSettingsTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.forceFilenameAsTitle)
 					.onChange(async (value) => {
 						this.plugin.settings.forceFilenameAsTitle = value;
+						await this.plugin.saveSettings();
+					})
+			);
+
+		new Setting(publishSection)
+			.setName(t('AUTO_OPEN_AFTER_PUBLISH'))
+			.setDesc(t('AUTO_OPEN_AFTER_PUBLISH_DESC'))
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.autoOpenAfterPublish)
+					.onChange(async (value) => {
+						this.plugin.settings.autoOpenAfterPublish = value;
 						await this.plugin.saveSettings();
 					})
 			);

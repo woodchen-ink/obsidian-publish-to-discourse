@@ -14,6 +14,8 @@ export default {
     'USE_REMOTE_IMAGE_URL_DESC': '发布后用Discourse上的远程图片URL替换本地文章中的图片链接',
     'FORCE_FILENAME_AS_TITLE': '强制使用文件名作为标题',
     'FORCE_FILENAME_AS_TITLE_DESC': '默认规则：优先使用front matter中的title，如果没有则使用文件名。启用后：总是使用文件名作为帖子标题，完全忽略front matter中的title',
+    'AUTO_OPEN_AFTER_PUBLISH': '发布后自动打开链接',
+    'AUTO_OPEN_AFTER_PUBLISH_DESC': '发布成功后自动在浏览器中打开 Discourse 帖子链接',
     'TEST_API_KEY': '测试连接',
     'TESTING': '测试中...',
     'API_TEST_SUCCESS': '连接成功！API密钥有效',

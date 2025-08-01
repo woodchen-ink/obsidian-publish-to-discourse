@@ -14,6 +14,8 @@ export default {
     'USE_REMOTE_IMAGE_URL_DESC': 'Replace local image links with remote URLs from Discourse after publishing',
     'FORCE_FILENAME_AS_TITLE': 'Force Use Filename as Title',
     'FORCE_FILENAME_AS_TITLE_DESC': 'Default: Use front matter title if exists, otherwise use filename. When enabled: Always use filename as post title, ignoring front matter title completely',
+    'AUTO_OPEN_AFTER_PUBLISH': 'Auto Open After Publish',
+    'AUTO_OPEN_AFTER_PUBLISH_DESC': 'Automatically open the Discourse post link in browser after publishing',
     'TEST_API_KEY': 'Test Connection',
     'TESTING': 'Testing...',
     'API_TEST_SUCCESS': 'Connection successful! API key is valid',

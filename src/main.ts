@@ -305,6 +305,12 @@ export default class PublishToDiscourse extends Plugin implements PluginInterfac
 					if (this.settings.useRemoteImageUrl) {
 						await this.updateLocalImageLinks(embedReferences, uploadedUrls);
 					}
+					
+					// 如果启用了自动打开功能，打开更新的帖子
+					if (this.settings.autoOpenAfterPublish) {
+						const discourseUrl = `${this.settings.baseUrl}/t/${topicId}`;
+						window.open(discourseUrl, '_blank');
+					}
 				}
 			} else {
 				// 创建新帖子
@@ -322,6 +328,12 @@ export default class PublishToDiscourse extends Plugin implements PluginInterfac
 					// 如果启用了远程URL替换，更新本地文件中的图片链接
 					if (this.settings.useRemoteImageUrl) {
 						await this.updateLocalImageLinks(embedReferences, uploadedUrls);
+					}
+					
+					// 如果启用了自动打开功能，打开新创建的帖子
+					if (this.settings.autoOpenAfterPublish) {
+						const discourseUrl = `${this.settings.baseUrl}/t/${result.topicId}`;
+						window.open(discourseUrl, '_blank');
 					}
 				}
 			}
