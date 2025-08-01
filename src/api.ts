@@ -14,6 +14,38 @@ export class DiscourseAPI {
         private settings: DiscourseSyncSettings
     ) {}
 
+    // 解析API错误响应
+    private parseErrorResponse(response: any): string {
+        try {
+            const errorResponse = response.json;
+            if (errorResponse) {
+                // 处理Discourse API的各种错误格式
+                if (errorResponse.errors && Array.isArray(errorResponse.errors)) {
+                    // 格式: {"errors": ["error message 1", "error message 2"]}
+                    return errorResponse.errors.join(', ');
+                } else if (errorResponse.error) {
+                    // 格式: {"error": "error message"}
+                    return errorResponse.error;
+                } else if (errorResponse.message) {
+                    // 格式: {"message": "error message"}
+                    return errorResponse.message;
+                } else if (typeof errorResponse === 'string') {
+                    // 直接是字符串错误信息
+                    return errorResponse;
+                } else {
+                    // 输出完整的错误对象
+                    return JSON.stringify(errorResponse);
+                }
+            }
+        } catch (parseError) {
+            // 如果无法解析JSON，尝试获取原始文本
+            if (response.text && typeof response.text === 'string') {
+                return response.text;
+            }
+        }
+        return ''; // 返回空字符串如果没有错误信息
+    }
+
     // 上传图片到Discourse
     async uploadImage(file: TFile): Promise<{shortUrl: string, fullUrl?: string} | null> {
         try {
@@ -73,7 +105,11 @@ export class DiscourseAPI {
                     fullUrl: fullUrl
                 };
             } else {
-                new NotifyUser(this.app, `Error uploading image: ${response.status}`).open();
+                const errorDetail = this.parseErrorResponse(response);
+                const errorMessage = errorDetail 
+                    ? `Error uploading image (${response.status}): ${errorDetail}`
+                    : `Error uploading image: ${response.status}`;
+                new NotifyUser(this.app, errorMessage).open();
                 return null;
             }
         } catch (error) {
@@ -120,29 +156,13 @@ export class DiscourseAPI {
                     };
                 }
             } else {
-                try {
-                    const errorResponse = response.json;
-                    if (errorResponse.errors && errorResponse.errors.length > 0) {
-                        return { 
-                            success: false,
-                            error: errorResponse.errors.join('\n')
-                        };
-                    }
-                    if (errorResponse.error) {
-                        return {
-                            success: false,
-                            error: errorResponse.error
-                        };
-                    }
-                } catch (parseError) {
-                    return {
-                        success: false,
-                        error: `${t('PUBLISH_FAILED')} (${response.status})`
-                    };
-                }
+                const errorDetail = this.parseErrorResponse(response);
+                const errorMessage = errorDetail 
+                    ? `${t('PUBLISH_FAILED')} (${response.status}): ${errorDetail}`
+                    : `${t('PUBLISH_FAILED')} (${response.status})`;
                 return {
                     success: false,
-                    error: `${t('PUBLISH_FAILED')} (${response.status})`
+                    error: errorMessage
                 };
             }
         } catch (error) {
@@ -177,9 +197,13 @@ export class DiscourseAPI {
             });
             
             if (postResponse.status !== 200) {
+                const errorDetail = this.parseErrorResponse(postResponse);
+                const errorMessage = errorDetail 
+                    ? `${t('UPDATE_FAILED')} (${postResponse.status}): ${errorDetail}`
+                    : `${t('UPDATE_FAILED')} (${postResponse.status})`;
                 return { 
                     success: false, 
-                    error: `${t('UPDATE_FAILED')} (${postResponse.status})` 
+                    error: errorMessage
                 };
             }
             
@@ -200,29 +224,13 @@ export class DiscourseAPI {
             if (topicResponse.status === 200) {
                 return { success: true };
             } else {
-                try {
-                    const errorResponse = topicResponse.json;
-                    if (errorResponse.errors && errorResponse.errors.length > 0) {
-                        return { 
-                            success: false,
-                            error: errorResponse.errors.join('\n')
-                        };
-                    }
-                    if (errorResponse.error) {
-                        return {
-                            success: false,
-                            error: errorResponse.error
-                        };
-                    }
-                } catch (parseError) {
-                    return {
-                        success: false,
-                        error: `${t('UPDATE_FAILED')} (${topicResponse.status})`
-                    };
-                }
+                const errorDetail = this.parseErrorResponse(topicResponse);
+                const errorMessage = errorDetail 
+                    ? `${t('UPDATE_FAILED')} (${topicResponse.status}): ${errorDetail}`
+                    : `${t('UPDATE_FAILED')} (${topicResponse.status})`;
                 return {
                     success: false,
-                    error: `${t('UPDATE_FAILED')} (${topicResponse.status})`
+                    error: errorMessage
                 };
             }
         } catch (error) {
@@ -273,7 +281,11 @@ export class DiscourseAPI {
                 
                 return categories;
             } else {
-                new NotifyUser(this.app, `Error fetching categories: ${response.status}`).open();
+                const errorDetail = this.parseErrorResponse(response);
+                const errorMessage = errorDetail 
+                    ? `Error fetching categories (${response.status}): ${errorDetail}`
+                    : `Error fetching categories: ${response.status}`;
+                new NotifyUser(this.app, errorMessage).open();
                 return [];
             }
         } catch (error) {
@@ -342,7 +354,11 @@ export class DiscourseAPI {
                 
                 return tags;
             } else {
-                new NotifyUser(this.app, `Error fetching tags: ${response.status}`).open();
+                const errorDetail = this.parseErrorResponse(response);
+                const errorMessage = errorDetail 
+                    ? `Error fetching tags (${response.status}): ${errorDetail}`
+                    : `Error fetching tags: ${response.status}`;
+                new NotifyUser(this.app, errorMessage).open();
                 return [];
             }
         } catch (error) {
@@ -415,9 +431,13 @@ export class DiscourseAPI {
                     };
                 }
             } else {
+                const errorDetail = this.parseErrorResponse(response);
+                const errorMessage = errorDetail 
+                    ? `${t('API_KEY_INVALID')} (${response.status}): ${errorDetail}`
+                    : `${t('API_KEY_INVALID')} (${response.status})`;
                 return {
                     success: false,
-                    message: `${t('API_KEY_INVALID')} (${response.status})`
+                    message: errorMessage
                 };
             }
         } catch (error) {
