@@ -1,13 +1,12 @@
 import { Menu, MenuItem, Plugin, TFile, moment } from 'obsidian';
 import { DEFAULT_SETTINGS, DiscourseSyncSettings, DiscourseSyncSettingsTab, ForumPreset } from './config';
-import * as yaml from 'yaml';
 import { t, setLocale } from './i18n';
 import { expandEmbeds } from './expand-embeds';
 import { DiscourseAPI } from './api';
 import { EmbedHandler } from './embed-handler';
 import { SelectCategoryModal, CategoryConflictModal, ForumSelectionModal } from './ui';
 import { NotifyUser } from './notification';
-import { getFrontMatter, removeFrontMatter } from './utils';
+import { getFrontMatter, removeFrontMatter, getForumMetadata, setForumMetadata, ForumMetadata } from './utils';
 import { ActiveFile, PluginInterface } from './types';
 
 export default class PublishToDiscourse extends Plugin implements PluginInterface {
@@ -110,9 +109,11 @@ export default class PublishToDiscourse extends Plugin implements PluginInterfac
 		
 		// 使用expandEmbeds处理嵌入内容
 		const content = await expandEmbeds(this.app, targetFile);
-		const fm = getFrontMatter(content);
-		const postId = fm?.discourse_post_id;
-		const topicId = fm?.discourse_topic_id;
+		
+		// 获取当前论坛的元数据
+		const forumMetadata = getForumMetadata(content, this.settings.baseUrl);
+		const postId = forumMetadata?.post_id;
+		const topicId = forumMetadata?.topic_id;
 		const isUpdate = postId !== undefined && topicId !== undefined;
 		
 		// 初始化activeFile对象
@@ -120,8 +121,8 @@ export default class PublishToDiscourse extends Plugin implements PluginInterfac
 			name: targetFile.basename,
 			content: content,
 			postId: postId,
-			// 从frontmatter中获取标签，如果没有则使用空数组
-			tags: fm?.discourse_tags || []
+			// 从当前论坛元数据中获取标签，如果没有则使用空数组
+			tags: forumMetadata?.tags || []
 		};
 		
 		// 获取分类和标签列表
@@ -143,7 +144,7 @@ export default class PublishToDiscourse extends Plugin implements PluginInterfac
 				
 				// 处理分类冲突
 				if (topicInfo.categoryId) {
-					const localCategoryId = fm?.discourse_category_id;
+					const localCategoryId = forumMetadata?.category_id;
 					const remoteCategoryId = topicInfo.categoryId;
 					
 					// 如果本地有设置分类ID且与远程不同，询问用户
@@ -221,16 +222,16 @@ export default class PublishToDiscourse extends Plugin implements PluginInterfac
 		}
 
 		const content = await this.app.vault.read(activeFile);
-		const fm = getFrontMatter(content);
-		const discourseUrl = fm?.discourse_url;
-		const topicId = fm?.discourse_topic_id;
-
-		if (!discourseUrl && !topicId) {
+		
+		// 尝试从当前论坛获取元数据
+		const forumMetadata = getForumMetadata(content, this.settings.baseUrl);
+		
+		if (!forumMetadata || !forumMetadata.topic_id) {
 			new NotifyUser(this.app, t('NO_TOPIC_ID')).open();
 			return;
 		}
 
-		const url = discourseUrl || `${this.settings.baseUrl}/t/${topicId}`;
+		const url = forumMetadata.url || `${this.settings.baseUrl}/t/${forumMetadata.topic_id}`;
 		window.open(url, '_blank');
 	}
 
@@ -359,43 +360,26 @@ export default class PublishToDiscourse extends Plugin implements PluginInterfac
 			}
 
 			const content = await this.app.vault.read(activeFile);
-			const fm = getFrontMatter(content);
 			const discourseUrl = `${this.settings.baseUrl}/t/${topicId}`;
 			
-			// 获取当前分类信息
-			const categoryId = this.settings.category;
-			// 查找分类名称
-			const categories = await this.api.fetchCategories();
-			const category = categories.find(c => c.id === categoryId);
-			const categoryName = category ? category.name : '';
+			// 创建新的论坛元数据
+			const metadata: ForumMetadata = {
+				post_id: postId,
+				topic_id: topicId,
+				url: discourseUrl,
+				category_id: this.settings.category,
+				tags: tags
+			};
 			
-			let newContent: string;
-			if (fm) {
-				// 更新现有Front Matter
-				const updatedFm = { 
-					...fm, 
-					discourse_post_id: postId, 
-					discourse_topic_id: topicId,
-					discourse_url: discourseUrl,
-					discourse_tags: tags,
-					discourse_category_id: categoryId,
-					discourse_category: categoryName
-				};
-				newContent = content.replace(/^---\n[\s\S]*?\n---\n/, `---\n${yaml.stringify(updatedFm)}---\n`);
-			} else {
-				// 添加新Front Matter
-				const newFm = { 
-					discourse_post_id: postId, 
-					discourse_topic_id: topicId,
-					discourse_url: discourseUrl,
-					discourse_tags: tags,
-					discourse_category_id: categoryId,
-					discourse_category: categoryName
-				};
-				newContent = `---\n${yaml.stringify(newFm)}---\n${content}`;
-			}
+			// 使用新的元数据管理函数
+			const newContent = setForumMetadata(
+				content, 
+				this.settings.baseUrl, 
+				metadata
+			);
 			
 			await this.app.vault.modify(activeFile, newContent);
+			
 			// 更新activeFile对象
 			this.activeFile = {
 				name: activeFile.basename,
