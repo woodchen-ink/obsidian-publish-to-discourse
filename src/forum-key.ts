@@ -3,16 +3,6 @@
  * 从 baseURL 提取有意义的论坛标识，用于元数据存储
  */
 
-// 常见的子域名，这些会被忽略以提取真正的主域名
-const COMMON_SUBDOMAINS = new Set([
-    'www', 'api', 'cdn', 'static', 'assets', 'img', 'images'
-]);
-
-// 顶级域名列表，用于正确识别主域名
-const COMMON_TLDS = new Set([
-    'com', 'org', 'net', 'edu', 'gov', 'mil', 'int',
-    'co.uk', 'co.jp', 'com.au', 'com.cn', 'co.in', 'md'
-]);
 
 /**
  * 从 baseURL 提取论坛标识
@@ -39,61 +29,34 @@ export function generateForumKey(baseUrl: string): string {
             return port ? `${ipKey}-${port}` : ipKey;
         }
         
-        // 分割域名部分
-        const parts = hostname.split('.');
-        
-        if (parts.length < 2) {
-            // 单个部分，直接返回
-            return sanitizeKey(parts[0]);
+        // 使用正则表达式提取域名部分（排除最后一个.及其后面的部分）
+        const domainMatch = hostname.match(/^(.+)\.([^.]+)$/);
+        if (!domainMatch) {
+            // 没有点号，直接返回
+            return sanitizeKey(hostname);
         }
         
-        // 找到主域名和子域名
-        const { subdomain, mainDomain } = extractDomainParts(parts);
+        const [, beforeLastDot] = domainMatch;
         
-        // 组合标识
-        if (subdomain && !COMMON_SUBDOMAINS.has(subdomain)) {
+        // 进一步分析 beforeLastDot 部分
+        const beforeParts = beforeLastDot.split('.');
+        
+        if (beforeParts.length === 1) {
+            // 格式：example.com
+            return sanitizeKey(beforeParts[0]);
+        } else {
+            // 格式：subdomain.example.com 或 sub.domain.example.com
+            // 直接使用最后两个部分：subdomain_mainDomain
+            const mainDomain = beforeParts[beforeParts.length - 1];
+            const subdomain = beforeParts[beforeParts.length - 2];
+            
             return sanitizeKey(`${subdomain}_${mainDomain}`);
         }
-        
-        return sanitizeKey(mainDomain);
         
     } catch (error) {
         // URL 解析失败，使用简化处理
         console.warn('Failed to parse forum URL:', baseUrl, error);
         return sanitizeKey(baseUrl.replace(/[^a-zA-Z0-9]/g, '_')).substring(0, 20);
-    }
-}
-
-/**
- * 提取域名的子域名和主域名部分
- */
-function extractDomainParts(parts: string[]): { subdomain: string | null; mainDomain: string } {
-    if (parts.length === 2) {
-        // 只有主域名和顶级域名
-        return {
-            subdomain: null,
-            mainDomain: parts[0]
-        };
-    }
-    
-    // 检查是否是复合顶级域名 (如 co.uk)
-    const lastTwo = `${parts[parts.length - 2]}.${parts[parts.length - 1]}`;
-    const isCompoundTLD = COMMON_TLDS.has(lastTwo);
-    
-    if (isCompoundTLD && parts.length >= 3) {
-        // 复合顶级域名: subdomain.example.co.uk
-        const mainDomainIndex = parts.length - 3;
-        return {
-            subdomain: parts.length > 3 ? parts[mainDomainIndex - 1] : null,
-            mainDomain: parts[mainDomainIndex]
-        };
-    } else {
-        // 普通顶级域名: subdomain.example.com
-        const mainDomainIndex = parts.length - 2;
-        return {
-            subdomain: parts.length > 2 ? parts[mainDomainIndex - 1] : null,
-            mainDomain: parts[mainDomainIndex]
-        };
     }
 }
 
@@ -138,16 +101,26 @@ export function getForumDisplayName(baseUrl: string): string {
             return url.port ? `${hostname}:${url.port}` : hostname;
         }
         
-        const parts = hostname.split('.');
-        if (parts.length >= 2) {
-            const { subdomain, mainDomain } = extractDomainParts(parts);
-            if (subdomain && !COMMON_SUBDOMAINS.has(subdomain)) {
-                return `${subdomain}.${mainDomain}`;
-            }
-            return mainDomain;
+        // 使用正则表达式提取域名部分
+        const domainMatch = hostname.match(/^(.+)\.([^.]+)$/);
+        if (!domainMatch) {
+            return hostname;
         }
         
-        return hostname;
+        const [, beforeLastDot] = domainMatch;
+        const beforeParts = beforeLastDot.split('.');
+        
+        if (beforeParts.length === 1) {
+            // 格式：example.com
+            return beforeParts[0];
+        } else {
+            // 格式：subdomain.example.com
+            // 直接使用最后两个部分：subdomain.mainDomain
+            const mainDomain = beforeParts[beforeParts.length - 1];
+            const subdomain = beforeParts[beforeParts.length - 2];
+            
+            return `${subdomain}.${mainDomain}`;
+        }
     } catch {
         return baseUrl;
     }

@@ -41,8 +41,11 @@ export function getForumMetadata(content: string, baseUrl: string): ForumMetadat
     const forumKey = generateForumKey(baseUrl);
     const fm = getFrontMatter(content);
     
-    if (fm?.discourse_forums?.[forumKey]) {
-        return fm.discourse_forums[forumKey];
+    if (fm?.[forumKey]) {
+        return {
+            ...fm[forumKey],
+            url: fm[`${forumKey}_url`] || ''
+        };
     }
     
     return null;
@@ -56,13 +59,12 @@ export function setForumMetadata(content: string, baseUrl: string, metadata: For
         fm = {};
     }
     
-    // 始终使用隔离模式
-    if (!fm.discourse_forums) {
-        fm.discourse_forums = {};
-    }
-    
     const forumKey = generateForumKey(baseUrl);
-    fm.discourse_forums[forumKey] = metadata;
+    
+    // 分离存储：主要数据和URL分开
+    const { url, ...mainData } = metadata;
+    fm[forumKey] = mainData;
+    fm[`${forumKey}_url`] = url;
     
     const contentWithoutFm = removeFrontMatter(content);
     return `---\n${yaml.stringify(fm)}---\n${contentWithoutFm}`;
