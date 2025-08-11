@@ -275,11 +275,14 @@ export default class PublishToDiscourse extends Plugin implements PluginInterfac
 			});
 		}
 
-		// 获取Front Matter
+		// 获取Front Matter（用于标题等信息）
 		const frontMatter = getFrontMatter(this.activeFile.content);
-		const postId = frontMatter?.discourse_post_id;
-		const topicId = frontMatter?.discourse_topic_id;
-		const isUpdate = postId !== undefined;
+		
+		// 使用当前论坛的元数据（JSON格式）获取postId和topicId
+		const forumMetadata = getForumMetadata(this.activeFile.content, this.settings.baseUrl);
+		const postId = forumMetadata?.post_id;
+		const topicId = forumMetadata?.topic_id;
+		const isUpdate = postId !== undefined && topicId !== undefined;
 		
 		// 获取当前选择的标签
 		const currentTags = this.activeFile.tags || [];
@@ -288,7 +291,7 @@ export default class PublishToDiscourse extends Plugin implements PluginInterfac
 		let result;
 		try {
 			if (isUpdate) {
-				// 更新帖子
+				// 智能更新帖子（内容、标题、分类、标签）
 				result = await this.api.updatePost(
 					postId,
 					topicId,

@@ -173,17 +173,16 @@ export class DiscourseAPI {
         }
     }
 
-    // 更新帖子
+    // 智能更新帖子（内容、标题、分类、标签）
     async updatePost(postId: number, topicId: number, title: string, content: string, category: number, tags: string[]): Promise<{ success: boolean; error?: string }> {
         const postEndpoint = `${this.settings.baseUrl}/posts/${postId}`;
-        const topicEndpoint = `${this.settings.baseUrl}/t/${topicId}`;
         const headers: Record<string, string> = {
             "User-Api-Key": this.settings.userApiKey,
             "Content-Type": "application/json"
         };
         
         try {
-            // 首先更新帖子内容
+            // 1. 先更新帖子内容
             const postResponse = await requestUrl({
                 url: postEndpoint,
                 method: "PUT",
@@ -207,7 +206,63 @@ export class DiscourseAPI {
                 };
             }
             
-            // 然后更新主题（标题、分类和标签）
+            // 2. 获取当前主题信息以检测是否需要更新标题/分类/标签
+            const currentTopicInfo = await this.fetchTopicInfo(topicId);
+            
+            // 检测是否需要更新主题信息
+            const needsTitleUpdate = currentTopicInfo && await this.needsTitleUpdate(topicId, title);
+            const needsCategoryUpdate = currentTopicInfo.categoryId !== category;
+            const needsTagsUpdate = JSON.stringify(currentTopicInfo.tags?.sort()) !== JSON.stringify(tags?.sort());
+            
+            // 3. 只在需要时更新主题信息
+            if (needsTitleUpdate || needsCategoryUpdate || needsTagsUpdate) {
+                const updateResult = await this.updateTopicInfo(topicId, title, category, tags);
+                if (!updateResult.success) {
+                    return updateResult;
+                }
+            }
+            
+            return { success: true };
+        } catch (error) {
+            return { 
+                success: false,
+                error: `${t('UPDATE_FAILED')}: ${error.message || t('UNKNOWN_ERROR')}`
+            };
+        }
+    }
+    
+    // 检查标题是否需要更新
+    private async needsTitleUpdate(topicId: number, newTitle: string): Promise<boolean> {
+        try {
+            const response = await requestUrl({
+                url: `${this.settings.baseUrl}/t/${topicId}.json`,
+                method: "GET",
+                headers: {
+                    "User-Api-Key": this.settings.userApiKey
+                },
+                throw: false
+            });
+            
+            if (response.status === 200) {
+                const currentTitle = response.json?.title;
+                return currentTitle !== newTitle;
+            }
+            
+            return true; // 如果获取失败，默认需要更新
+        } catch (error) {
+            return true; // 出错时默认需要更新
+        }
+    }
+
+    // 更新主题信息（标题、分类、标签）
+    async updateTopicInfo(topicId: number, title: string, category: number, tags: string[]): Promise<{ success: boolean; error?: string }> {
+        const topicEndpoint = `${this.settings.baseUrl}/t/${topicId}`;
+        const headers: Record<string, string> = {
+            "User-Api-Key": this.settings.userApiKey,
+            "Content-Type": "application/json"
+        };
+        
+        try {
             const topicResponse = await requestUrl({
                 url: topicEndpoint,
                 method: "PUT",
