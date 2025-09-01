@@ -251,12 +251,6 @@ export default class PublishToDiscourse extends Plugin implements PluginInterfac
 		// 替换嵌入引用为Markdown格式
 		content = this.embedHandler.replaceEmbedReferences(content, embedReferences, uploadedUrls);
 
-		// 如果启用了"跳过一级标题"选项，则删除所有H1标题
-		if (this.settings.skipH1) {
-			// 匹配Markdown中的所有H1标题（# 标题）
-			content = content.replace(/^\s*# [^\n]+\n?/gm, '');
-		}
-
 		// 如果启用了"转换高亮"选项，则转换 ==高亮== 语法为 <mark> 格式
 		if (this.settings.convertHighlight) {
 			content = content.replace(/==([^=]+)==/g, '<mark>$1</mark>');
@@ -265,14 +259,64 @@ export default class PublishToDiscourse extends Plugin implements PluginInterfac
 		// 如果启用了"忽略特定标题"选项，则忽略指定标题内的内容
 		if (this.settings.ignoreHeadings) {
 			const headingsToIgnore = this.settings.ignoreHeadings.split(',').map(h => h.trim());
-			headingsToIgnore.forEach(heading => {
-				// 匹配指定标题及其所有子级内容，直到遇到同级或更高级标题或文档结尾
-				const regex = new RegExp(
-					`(^#{1,6}\\s+${heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}.*\\n)([\\s\\S]*?)(?=^#{1,6}\\s|\\Z)`,
-					'gm'
-				);
-				content = content.replace(regex, '');
-			});
+			// 解析所有标题及其位置和层级
+			const headingRegex = /^#{1,6}\s+.*$/gm;
+			const matches = [];
+			let match;
+			while ((match = headingRegex.exec(content)) !== null) {
+				const line = match[0];
+				const index = match.index;
+				const levelMatch = line.match(/^#+/);
+				const level = levelMatch ? levelMatch[0].length : 1;
+				const title = line.replace(/^#+\s+/, '').trim();
+				matches.push({ index, level, title });
+			}
+
+			let removeRanges = [];
+			for (let i = 0; i < matches.length; i++) {
+				const { index, level, title } = matches[i];
+				if (headingsToIgnore.includes(title)) {
+					// 找到下一个同级或更高级标题的位置
+					let end = content.length;
+					for (let j = i + 1; j < matches.length; j++) {
+						if (matches[j].level <= level) {
+							end = matches[j].index;
+							break;
+						}
+					}
+					removeRanges.push({ start: index, end });
+				}
+			}
+			// 合并重叠区间
+			if (removeRanges.length > 0) {
+				// 按起始位置排序
+				removeRanges.sort((a, b) => a.start - b.start);
+				let merged = [removeRanges[0]];
+				for (let i = 1; i < removeRanges.length; i++) {
+					const last = merged[merged.length - 1];
+					const curr = removeRanges[i];
+					if (curr.start <= last.end) {
+						last.end = Math.max(last.end, curr.end);
+					} else {
+						merged.push(curr);
+					}
+				}
+				// 删除区间内容
+				let newContent = '';
+				let prevEnd = 0;
+				for (const range of merged) {
+					newContent += content.slice(prevEnd, range.start);
+					prevEnd = range.end;
+				}
+				newContent += content.slice(prevEnd);
+				content = newContent;
+			}
+		}
+		
+		// 如果启用了"跳过一级标题"选项，则删除所有H1标题
+		if (this.settings.skipH1) {
+			// 匹配Markdown中的所有H1标题（# 标题）
+			content = content.replace(/^\s*# [^\n]+\n?/gm, '');
 		}
 
 		// 获取Front Matter（用于标题等信息）
