@@ -6,7 +6,7 @@ import { DiscourseAPI } from './api';
 import { EmbedHandler } from './embed-handler';
 import { SelectCategoryModal, CategoryConflictModal, ForumSelectionModal } from './ui';
 import { NotifyUser } from './notification';
-import { getFrontMatter, removeFrontMatter, getForumMetadata, setForumMetadata, ForumMetadata } from './utils';
+import { getFrontMatter, removeFrontMatter, getForumMetadata, setForumMetadata, ForumMetadata, extractTagsFromContent } from './utils';
 import { ActiveFile, PluginInterface } from './types';
 
 export default class PublishToDiscourse extends Plugin implements PluginInterface {
@@ -116,13 +116,20 @@ export default class PublishToDiscourse extends Plugin implements PluginInterfac
 		const topicId = forumMetadata?.topic_id;
 		const isUpdate = postId !== undefined && topicId !== undefined;
 		
+		// 从文章内容中提取标签（Frontmatter 中的 tags 和内容中的 #tag）
+		const extractedTags = extractTagsFromContent(content);
+
+		// 合并已有标签和从内容中提取的标签（去重）
+		const existingTags = forumMetadata?.tags || [];
+		const mergedTags = [...new Set([...existingTags, ...extractedTags])];
+
 		// 初始化activeFile对象
 		this.activeFile = {
 			name: targetFile.basename,
 			content: content,
 			postId: postId,
-			// 从当前论坛元数据中获取标签，如果没有则使用空数组
-			tags: forumMetadata?.tags || []
+			// 合并后的标签
+			tags: mergedTags
 		};
 		
 		// 获取分类和标签列表
