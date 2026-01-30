@@ -6,7 +6,7 @@ import { DiscourseAPI } from './api';
 import { EmbedHandler } from './embed-handler';
 import { SelectCategoryModal, CategoryConflictModal, ForumSelectionModal } from './ui';
 import { NotifyUser } from './notification';
-import { getFrontMatter, removeFrontMatter, getForumMetadata, setForumMetadata, ForumMetadata, extractTagsFromContent } from './utils';
+import { getFrontMatter, removeFrontMatter, getForumMetadata, setForumMetadata, ForumMetadata, extractTagsFromContent, updateListProperty } from './utils';
 import { ActiveFile, PluginInterface } from './types';
 
 export default class PublishToDiscourse extends Plugin implements PluginInterface {
@@ -413,9 +413,9 @@ export default class PublishToDiscourse extends Plugin implements PluginInterfac
 				return;
 			}
 
-			const content = await this.app.vault.read(activeFile);
+			let content = await this.app.vault.read(activeFile);
 			const discourseUrl = `${this.settings.baseUrl}/t/${topicId}`;
-			
+
 			// 创建新的论坛元数据
 			const metadata: ForumMetadata = {
 				post_id: postId,
@@ -424,25 +424,60 @@ export default class PublishToDiscourse extends Plugin implements PluginInterfac
 				category_id: this.settings.category,
 				tags: tags
 			};
-			
+
 			// 使用新的元数据管理函数
-			const newContent = setForumMetadata(
-				content, 
-				this.settings.baseUrl, 
+			content = setForumMetadata(
+				content,
+				this.settings.baseUrl,
 				metadata
 			);
-			
-			await this.app.vault.modify(activeFile, newContent);
-			
+
+			// 如果启用了列表属性功能，更新列表属性
+			if (this.settings.enableListProperties) {
+				// 获取当前论坛名称
+				const forumName = this.getCurrentForumName();
+
+				// 更新论坛名称列表
+				if (this.settings.forumListProperty) {
+					content = updateListProperty(content, this.settings.forumListProperty, forumName);
+				}
+
+				// 更新帖子链接列表
+				if (this.settings.urlListProperty) {
+					content = updateListProperty(content, this.settings.urlListProperty, discourseUrl);
+				}
+			}
+
+			await this.app.vault.modify(activeFile, content);
+
 			// 更新activeFile对象
 			this.activeFile = {
 				name: activeFile.basename,
-				content: newContent,
+				content: content,
 				postId: postId,
 				tags: tags
 			};
 		} catch (error) {
 			new NotifyUser(this.app, t('UPDATE_FAILED')).open();
+		}
+	}
+
+	// 获取当前论坛名称
+	private getCurrentForumName(): string {
+		// 如果启用了多论坛功能且有选中的论坛
+		if (this.settings.enableMultiForums && this.settings.selectedForumId) {
+			const preset = this.settings.forumPresets.find(p => p.id === this.settings.selectedForumId);
+			if (preset) {
+				return preset.name;
+			}
+		}
+
+		// 单论坛模式：从 baseUrl 提取域名作为名称
+		try {
+			const url = new URL(this.settings.baseUrl);
+			return url.hostname;
+		} catch {
+			return this.settings.baseUrl;
 		}
 	}
 

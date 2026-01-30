@@ -130,5 +130,15 @@ export default {
     'SINGLE_FORUM_MODE': 'Single Forum Mode',
     'MULTI_FORUM_MODE': 'Multi-Forum Mode',
     'CANCEL': 'Cancel',
-    'SAVE': 'Save'
+    'SAVE': 'Save',
+
+    // List Properties Configuration
+    'CONFIG_LIST_PROPERTY_TITLE': 'List Properties',
+    'CONFIG_LIST_PROPERTY_DESC': 'Store publishing info in list properties for easy querying with Dataview or Bases',
+    'ENABLE_LIST_PROPERTIES': 'Enable List Properties',
+    'ENABLE_LIST_PROPERTIES_DESC': 'When enabled, forum names and post URLs will be stored in specified list properties',
+    'FORUM_LIST_PROPERTY': 'Forum Name Property',
+    'FORUM_LIST_PROPERTY_DESC': 'Property name to store the list of published forum names',
+    'URL_LIST_PROPERTY': 'Post URL Property',
+    'URL_LIST_PROPERTY_DESC': 'Property name to store the list of published post URLs'
 } 

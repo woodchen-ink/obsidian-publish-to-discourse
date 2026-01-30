@@ -132,5 +132,15 @@ export default {
     'SINGLE_FORUM_MODE': '单论坛模式',
     'MULTI_FORUM_MODE': '多论坛模式',
     'CANCEL': '取消',
-    'SAVE': '保存'
+    'SAVE': '保存',
+
+    // 列表属性配置
+    'CONFIG_LIST_PROPERTY_TITLE': '列表属性',
+    'CONFIG_LIST_PROPERTY_DESC': '将发布信息存储到列表属性中，便于使用 Dataview 或 Bases 进行查询',
+    'ENABLE_LIST_PROPERTIES': '启用列表属性',
+    'ENABLE_LIST_PROPERTIES_DESC': '启用后，发布时会将论坛名称和帖子链接存储到指定的列表属性中',
+    'FORUM_LIST_PROPERTY': '论坛名称属性',
+    'FORUM_LIST_PROPERTY_DESC': '用于存储已发布论坛名称列表的属性名',
+    'URL_LIST_PROPERTY': '帖子链接属性',
+    'URL_LIST_PROPERTY_DESC': '用于存储已发布帖子链接列表的属性名'
 } 

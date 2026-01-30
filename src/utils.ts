@@ -70,6 +70,35 @@ export function setForumMetadata(content: string, baseUrl: string, metadata: For
     return `---\n${yaml.stringify(fm)}---\n${contentWithoutFm}`;
 }
 
+// 更新列表属性（追加不重复的值）
+export function updateListProperty(content: string, propertyName: string, value: string): string {
+    let fm = getFrontMatter(content);
+
+    if (!fm) {
+        fm = {};
+    }
+
+    // 获取现有列表或创建新列表
+    let list: string[] = [];
+    if (fm[propertyName]) {
+        if (Array.isArray(fm[propertyName])) {
+            list = fm[propertyName];
+        } else if (typeof fm[propertyName] === 'string') {
+            list = [fm[propertyName]];
+        }
+    }
+
+    // 追加值（去重）
+    if (!list.includes(value)) {
+        list.push(value);
+    }
+
+    fm[propertyName] = list;
+
+    const contentWithoutFm = removeFrontMatter(content);
+    return `---\n${yaml.stringify(fm)}---\n${contentWithoutFm}`;
+}
+
 // 从文章内容中提取标签
 // 支持两种格式:
 // 1. Frontmatter 中的 tags 字段 (YAML 格式)

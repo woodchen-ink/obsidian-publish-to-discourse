@@ -28,6 +28,11 @@ export interface DiscourseSyncSettings {
 	enableMultiForums: boolean; // 是否启用多论坛功能
 	forumPresets: ForumPreset[]; // 论坛预设列表
 	selectedForumId?: string; // 当前选择的论坛ID
+
+	// 列表属性配置
+	enableListProperties: boolean; // 是否启用列表属性
+	forumListProperty: string; // 论坛名称列表属性名
+	urlListProperty: string; // 帖子链接列表属性名
 }
 
 export const DEFAULT_SETTINGS: DiscourseSyncSettings = {
@@ -41,7 +46,10 @@ export const DEFAULT_SETTINGS: DiscourseSyncSettings = {
 	forceFilenameAsTitle: false, // 默认不强制使用文件名
 	autoOpenAfterPublish: false, // 默认关闭自动打开
 	enableMultiForums: false,
-	forumPresets: []
+	forumPresets: [],
+	enableListProperties: false, // 默认关闭列表属性
+	forumListProperty: "output", // 默认论坛列表属性名
+	urlListProperty: "output_urls" // 默认链接列表属性名
 };
 
 export class DiscourseSyncSettingsTab extends PluginSettingTab {
@@ -444,6 +452,56 @@ export class DiscourseSyncSettingsTab extends PluginSettingTab {
 						await this.plugin.saveSettings();
 					})
 			);
+
+		// ====== 列表属性配置 ======
+		const listPropertySection = containerEl.createDiv('ptd-config-section');
+		listPropertySection.createEl('h2', { text: t('CONFIG_LIST_PROPERTY_TITLE') });
+		listPropertySection.createEl('p', {
+			text: t('CONFIG_LIST_PROPERTY_DESC'),
+			cls: 'setting-item-description'
+		});
+
+		new Setting(listPropertySection)
+			.setName(t('ENABLE_LIST_PROPERTIES'))
+			.setDesc(t('ENABLE_LIST_PROPERTIES_DESC'))
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.enableListProperties)
+					.onChange(async (value) => {
+						this.plugin.settings.enableListProperties = value;
+						await this.plugin.saveSettings();
+						this.display(); // 重新渲染以显示/隐藏下面的选项
+					})
+			);
+
+		// 只有启用列表属性时才显示下面的设置
+		if (this.plugin.settings.enableListProperties) {
+			new Setting(listPropertySection)
+				.setName(t('FORUM_LIST_PROPERTY'))
+				.setDesc(t('FORUM_LIST_PROPERTY_DESC'))
+				.addText((text) =>
+					text
+						.setPlaceholder('output')
+						.setValue(this.plugin.settings.forumListProperty)
+						.onChange(async (value) => {
+							this.plugin.settings.forumListProperty = value;
+							await this.plugin.saveSettings();
+						})
+				);
+
+			new Setting(listPropertySection)
+				.setName(t('URL_LIST_PROPERTY'))
+				.setDesc(t('URL_LIST_PROPERTY_DESC'))
+				.addText((text) =>
+					text
+						.setPlaceholder('output_urls')
+						.setValue(this.plugin.settings.urlListProperty)
+						.onChange(async (value) => {
+							this.plugin.settings.urlListProperty = value;
+							await this.plugin.saveSettings();
+						})
+				);
+		}
 	}
 
 	private displayForumPreset(container: HTMLElement, preset: ForumPreset, index: number): void {
