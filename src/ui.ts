@@ -1,16 +1,16 @@
 import { App, Modal, Notice } from 'obsidian';
 import { t } from './i18n';
-import { PluginInterface } from './types';
+import { PluginInterface, DiscourseCategory } from './types';
 import { ForumPreset } from './config';
 
 // 选择分类的模态框
 export class SelectCategoryModal extends Modal {
     plugin: PluginInterface;
-    categories: {id: number; name: string}[];
+    categories: DiscourseCategory[];
     tags: { name: string; canCreate: boolean }[];
     canCreateTags = false;
 
-    constructor(app: App, plugin: PluginInterface, categories: {id: number; name: string }[], tags: { name: string; canCreate: boolean }[]) {
+    constructor(app: App, plugin: PluginInterface, categories: DiscourseCategory[], tags: { name: string; canCreate: boolean }[]) {
         super(app);
         this.plugin = plugin;
         this.categories = categories;
@@ -21,11 +21,11 @@ export class SelectCategoryModal extends Modal {
     onOpen() {
         // 添加模态框基础样式
         this.modalEl.addClass('mod-ptd');
-        
+
         const { contentEl } = this;
         contentEl.empty();
         contentEl.addClass('ptd-modal');
-        
+
         const isUpdate = this.plugin.activeFile.postId !== undefined;
         contentEl.createEl('h1', { text: isUpdate ? t('UPDATE_POST') : t('PUBLISH_TO_DISCOURSE') });
 
@@ -35,44 +35,128 @@ export class SelectCategoryModal extends Modal {
         // 创建分类选择容器
         const selectContainer = formArea.createEl('div', { cls: 'select-container' });
         selectContainer.createEl('label', { text: t('CATEGORY') });
-        const selectEl = selectContainer.createEl('select');
-        
-        // 添加分类选项
-        this.categories.forEach(category => {
-            const option = selectEl.createEl('option', { text: category.name });
-            option.value = category.id.toString();
-        });
-        
-        // 设置默认选中的分类
-        selectEl.value = this.plugin.settings.category?.toString() || this.categories[0].id.toString();
-        
-        // 监听分类选择变化
-        selectEl.onchange = () => {
-            this.plugin.settings.category = parseInt(selectEl.value);
-            this.plugin.saveSettings();
+
+        // 自定义下拉菜单
+        const dropdownWrapper = selectContainer.createEl('div', { cls: 'ptd-dropdown-wrapper' });
+        const dropdownTrigger = dropdownWrapper.createEl('div', { cls: 'ptd-dropdown-trigger' });
+
+        // 选中值显示区域
+        const selectedValueDisplay = dropdownTrigger.createEl('div', { cls: 'selected-value' });
+        dropdownTrigger.createEl('div', { cls: 'dropdown-arrow', text: '▼' });
+
+        const dropdownMenu = dropdownWrapper.createEl('div', { cls: 'ptd-dropdown-menu' });
+
+        // 初始化当前选中的分类ID
+        let currentCategoryId = this.plugin.settings.category || (this.categories.length > 0 ? this.categories[0].id : null);
+
+        // 更新选中值的显示
+        const updateSelectedValue = (categoryId: number) => {
+            selectedValueDisplay.empty();
+            const category = this.categories.find(c => c.id === categoryId);
+
+            if (category) {
+                const colorBlock = selectedValueDisplay.createEl('span', { cls: 'category-color-block' });
+                colorBlock.style.backgroundColor = `#${category.color}`;
+                selectedValueDisplay.createEl('span', { text: category.name });
+            } else {
+                selectedValueDisplay.createEl('span', { text: t('SELECT_CATEGORY') });
+            }
         };
+
+        // 如果有当前分类，显示它
+        if (currentCategoryId) {
+            updateSelectedValue(currentCategoryId);
+        }
+
+        // 切换下拉菜单显示
+        dropdownTrigger.onclick = (e) => {
+            e.stopPropagation();
+            const isVisible = dropdownMenu.hasClass('show');
+            if (isVisible) {
+                dropdownMenu.removeClass('show');
+                dropdownTrigger.removeClass('active');
+            } else {
+                dropdownMenu.addClass('show');
+                dropdownTrigger.addClass('active');
+            }
+        };
+
+        // 点击外部关闭下拉菜单
+        const closeDropdown = () => {
+            dropdownMenu.removeClass('show');
+            dropdownTrigger.removeClass('active');
+        };
+
+        window.addEventListener('click', closeDropdown);
+
+        // 在模态框关闭时移除事件监听
+        const originalOnClose = this.onClose;
+        this.onClose = () => {
+            window.removeEventListener('click', closeDropdown);
+            originalOnClose.call(this);
+        };
+
+        // 填充下拉选项
+        this.categories.forEach(category => {
+            const item = dropdownMenu.createEl('div', { cls: 'ptd-dropdown-item' });
+
+            // 根据深度添加缩进类
+            if (category.depth > 0) {
+                item.addClass(`depth-${Math.min(category.depth, 2)}`); // 最多支持2级缩进样式
+            }
+
+            // 颜色块
+            const colorBlock = item.createEl('span', { cls: 'category-color-block' });
+            colorBlock.style.backgroundColor = `#${category.color}`;
+
+            // 分类名称
+            item.createEl('span', { text: category.name });
+
+            // 选中状态
+            if (category.id === currentCategoryId) {
+                item.addClass('selected');
+            }
+
+            // 点击选择
+            item.onclick = (e) => {
+                e.stopPropagation();
+
+                // 更新选中状态
+                currentCategoryId = category.id;
+                this.plugin.settings.category = category.id;
+                this.plugin.saveSettings();
+
+                // 更新UI
+                updateSelectedValue(category.id);
+                dropdownMenu.findAll('.ptd-dropdown-item').forEach(el => el.removeClass('selected'));
+                item.addClass('selected');
+
+                // 关闭菜单
+                closeDropdown();
+            };
+        });
 
         // 创建标签容器
         const tagContainer = formArea.createEl('div', { cls: 'tag-container' });
         tagContainer.createEl('label', { text: t('TAGS') });
-        
+
         // 创建标签选择区域
         const tagSelectArea = tagContainer.createEl('div', { cls: 'tag-select-area' });
-        
+
         // 已选标签显示区域
         const selectedTagsContainer = tagSelectArea.createEl('div', { cls: 'selected-tags' });
         const selectedTags = new Set<string>();
-        
+
         // 初始化已选标签
         if (this.plugin.activeFile.tags && this.plugin.activeFile.tags.length > 0) {
             this.plugin.activeFile.tags.forEach(tag => selectedTags.add(tag));
         }
-        
+
         // 更新标签显示
         const updateSelectedTags = () => {
             selectedTagsContainer.empty();
             selectedTags.forEach(tag => {
-                const tagEl = selectedTagsContainer.createEl('span', { 
+                const tagEl = selectedTagsContainer.createEl('span', {
                     cls: 'tag',
                     text: tag
                 });
@@ -87,30 +171,30 @@ export class SelectCategoryModal extends Modal {
                 };
             });
         };
-        
+
         // 初始化标签显示
         updateSelectedTags();
-        
+
         // 创建标签输入容器
         const tagInputContainer = tagSelectArea.createEl('div', { cls: 'tag-input-container' });
-        
+
         // 创建标签输入和建议
         const tagInput = tagInputContainer.createEl('input', {
             type: 'text',
             placeholder: this.canCreateTags ? t('ENTER_TAG_WITH_CREATE') : t('ENTER_TAG')
         });
-        
+
         // 创建标签建议容器
         const tagSuggestions = tagInputContainer.createEl('div', { cls: 'tag-suggestions' });
-        
+
         // 创建默认标签网格容器
         const defaultTagsGrid = tagInputContainer.createEl('div', { cls: 'default-tags-grid' });
-        
+
         // 显示默认标签网格
         const showDefaultTags = () => {
             defaultTagsGrid.empty();
             const availableTags = this.tags.filter(tag => !selectedTags.has(tag.name)).slice(0, 20);
-            
+
             if (availableTags.length > 0) {
                 availableTags.forEach(tag => {
                     const tagEl = defaultTagsGrid.createEl('span', {
@@ -125,40 +209,40 @@ export class SelectCategoryModal extends Modal {
                 });
             }
         };
-        
+
         // 初始化显示默认标签网格
         showDefaultTags();
-        
+
         // 处理输入事件，显示匹配的标签
         tagInput.oninput = () => {
             const value = tagInput.value.toLowerCase();
-            
+
             if (value) {
                 // 有输入时隐藏默认网格，显示搜索结果
                 defaultTagsGrid.style.display = 'none';
                 tagSuggestions.empty();
-                
+
                 const matches = this.tags
-                    .filter(tag => 
-                        tag.name.toLowerCase().includes(value) && 
+                    .filter(tag =>
+                        tag.name.toLowerCase().includes(value) &&
                         !selectedTags.has(tag.name)
                     )
                     .slice(0, 20); // 搜索结果显示更多
-                
+
                 if (matches.length > 0) {
                     // 获取输入框位置和宽度
                     const inputRect = tagInput.getBoundingClientRect();
                     const modalRect = this.modalEl.getBoundingClientRect();
-                    
+
                     // 确保建议列表不超过模态框宽度
                     const maxWidth = modalRect.right - inputRect.left - 24; // 24px是右边距
-                    
+
                     // 设置建议列表位置和宽度
                     tagSuggestions.style.top = `${inputRect.bottom + 4}px`;
                     tagSuggestions.style.left = `${inputRect.left}px`;
                     tagSuggestions.style.width = `${Math.min(inputRect.width, maxWidth)}px`;
                     tagSuggestions.style.display = 'block';
-                    
+
                     matches.forEach(tag => {
                         const suggestion = tagSuggestions.createEl('div', {
                             cls: 'tag-suggestion',
@@ -183,7 +267,7 @@ export class SelectCategoryModal extends Modal {
                 showDefaultTags();
             }
         };
-        
+
         // 处理回车事件
         tagInput.onkeydown = (e) => {
             if (e.key === 'Enter' && tagInput.value) {
@@ -209,7 +293,7 @@ export class SelectCategoryModal extends Modal {
                 defaultTagsGrid.style.display = 'grid';
             }
         };
-        
+
         // 处理失焦事件，隐藏建议
         tagInput.onblur = () => {
             // 延迟隐藏，以便可以点击建议
@@ -218,7 +302,7 @@ export class SelectCategoryModal extends Modal {
                 defaultTagsGrid.style.display = 'grid';
             }, 200);
         };
-        
+
         // 处理窗口滚动，更新建议列表位置
         const updateSuggestionsPosition = () => {
             if (tagSuggestions.childNodes.length > 0) {
@@ -228,58 +312,58 @@ export class SelectCategoryModal extends Modal {
                 tagSuggestions.style.width = `${inputRect.width}px`;
             }
         };
-        
+
         // 监听滚动事件
         this.modalEl.addEventListener('scroll', updateSuggestionsPosition);
-        
+
         // 模态框关闭时移除事件监听器
         this.modalEl.onclose = () => {
             this.modalEl.removeEventListener('scroll', updateSuggestionsPosition);
         };
-        
+
         // 创建按钮区域
         const buttonArea = contentEl.createEl('div', { cls: 'button-area' });
-        const submitButton = buttonArea.createEl('button', { 
+        const submitButton = buttonArea.createEl('button', {
             text: isUpdate ? t('UPDATE') : t('PUBLISH'),
             cls: 'submit-button'
         });
-        
+
         submitButton.onclick = async () => {
             // 保存当前选择的标签到activeFile对象
             this.plugin.activeFile.tags = Array.from(selectedTags);
-            
+
             // 禁用提交按钮，显示加载状态
             submitButton.disabled = true;
             submitButton.textContent = isUpdate ? t('UPDATING') : t('PUBLISHING');
-            
+
             try {
                 // 发布主题
                 const result = await this.plugin.publishTopic();
-                
+
                 if (result.success) {
                     // 成功
                     new Notice(isUpdate ? t('UPDATE_SUCCESS') : t('PUBLISH_SUCCESS'), 5000);
-                    
+
                     // 2秒后自动关闭
                     setTimeout(() => {
                         this.close();
                     }, 2000);
                 } else {
                     // 失败 - 使用 Obsidian 原生 Notice
-                    const errorMessage = (isUpdate ? t('UPDATE_ERROR') : t('PUBLISH_ERROR')) + 
-                                       '\n' + (result.error || t('UNKNOWN_ERROR'));
+                    const errorMessage = (isUpdate ? t('UPDATE_ERROR') : t('PUBLISH_ERROR')) +
+                        '\n' + (result.error || t('UNKNOWN_ERROR'));
                     new Notice(errorMessage, 8000);
-                    
+
                     // 重置按钮状态
                     submitButton.disabled = false;
                     submitButton.textContent = isUpdate ? t('UPDATE') : t('PUBLISH');
                 }
             } catch (error) {
                 // 显示错误 - 使用 Obsidian 原生 Notice
-                const errorMessage = (isUpdate ? t('UPDATE_ERROR') : t('PUBLISH_ERROR')) + 
-                                   '\n' + (error.message || t('UNKNOWN_ERROR'));
+                const errorMessage = (isUpdate ? t('UPDATE_ERROR') : t('PUBLISH_ERROR')) +
+                    '\n' + (error.message || t('UNKNOWN_ERROR'));
                 new Notice(errorMessage, 8000);
-                
+
                 // 重置按钮状态
                 submitButton.disabled = false;
                 submitButton.textContent = isUpdate ? t('UPDATE') : t('PUBLISH');
@@ -303,8 +387,8 @@ export class CategoryConflictModal extends Modal {
     resolve: (useRemote: boolean) => void;
 
     constructor(
-        app: App, 
-        plugin: PluginInterface, 
+        app: App,
+        plugin: PluginInterface,
         localCategoryId: number,
         localCategoryName: string,
         remoteCategoryId: number,
@@ -340,11 +424,11 @@ export class CategoryConflictModal extends Modal {
 
         // 分类对比
         const comparisonContainer = contentEl.createEl('div', { cls: 'category-comparison' });
-        
+
         // 本地分类
         const localContainer = comparisonContainer.createEl('div', { cls: 'category-option local' });
         localContainer.createEl('h3', { text: t('LOCAL_CATEGORY') });
-        localContainer.createEl('div', { 
+        localContainer.createEl('div', {
             cls: 'category-name',
             text: `${this.localCategoryName} (ID: ${this.localCategoryId})`
         });
@@ -352,14 +436,14 @@ export class CategoryConflictModal extends Modal {
         // 远程分类
         const remoteContainer = comparisonContainer.createEl('div', { cls: 'category-option remote' });
         remoteContainer.createEl('h3', { text: t('REMOTE_CATEGORY') });
-        remoteContainer.createEl('div', { 
+        remoteContainer.createEl('div', {
             cls: 'category-name',
             text: `${this.remoteCategoryName} (ID: ${this.remoteCategoryId})`
         });
 
         // 按钮区域
         const buttonArea = contentEl.createEl('div', { cls: 'button-area' });
-        
+
         // 保持本地分类按钮
         const keepLocalButton = buttonArea.createEl('button', {
             cls: 'keep-local-button',
@@ -421,16 +505,16 @@ export class ForumSelectionModal extends Modal {
         // 如果没有启用多论坛或者没有预设，显示单论坛模式
         if (!this.plugin.settings.enableMultiForums || this.forumPresets.length === 0) {
             const singleForumOption = forumsContainer.createEl('div', { cls: 'forum-option single-forum' });
-            
+
             const optionHeader = singleForumOption.createEl('div', { cls: 'forum-option-header' });
             optionHeader.createEl('div', { cls: 'forum-name', text: t('SINGLE_FORUM_MODE') });
             optionHeader.createEl('div', { cls: 'forum-url', text: this.plugin.settings.baseUrl });
-            
+
             const selectButton = singleForumOption.createEl('button', {
                 cls: 'forum-select-button',
                 text: t('PUBLISH')
             });
-            
+
             selectButton.onclick = () => {
                 // 返回null表示使用单论坛模式
                 this.resolve(null);
@@ -440,21 +524,21 @@ export class ForumSelectionModal extends Modal {
             // 显示多论坛选项
             this.forumPresets.forEach(preset => {
                 const forumOption = forumsContainer.createEl('div', { cls: 'forum-option' });
-                
+
                 // 如果是当前选中的论坛，添加selected类
                 if (this.plugin.settings.selectedForumId === preset.id) {
                     forumOption.addClass('selected');
                 }
-                
+
                 const optionHeader = forumOption.createEl('div', { cls: 'forum-option-header' });
                 optionHeader.createEl('div', { cls: 'forum-name', text: preset.name });
                 optionHeader.createEl('div', { cls: 'forum-url', text: preset.baseUrl });
-                
+
                 const selectButton = forumOption.createEl('button', {
                     cls: 'forum-select-button',
                     text: t('PUBLISH')
                 });
-                
+
                 selectButton.onclick = () => {
                     this.resolve(preset);
                     this.close();
@@ -490,7 +574,7 @@ export class ForumPresetEditModal extends Modal {
 
     constructor(app: App, preset: ForumPreset, isNew = false) {
         super(app);
-        this.preset = {...preset}; // 创建副本
+        this.preset = { ...preset }; // 创建副本
         this.isNew = isNew;
     }
 
@@ -500,8 +584,8 @@ export class ForumPresetEditModal extends Modal {
         contentEl.addClass('ptd-preset-edit-modal');
 
         // 标题
-        contentEl.createEl('h2', { 
-            text: this.isNew ? t('ADD_FORUM_PRESET') : t('EDIT') + ' ' + this.preset.name 
+        contentEl.createEl('h2', {
+            text: this.isNew ? t('ADD_FORUM_PRESET') : t('EDIT') + ' ' + this.preset.name
         });
 
         // 表单
@@ -547,7 +631,7 @@ export class ForumPresetEditModal extends Modal {
             const { generateKeyPairAndNonce, saveKeyPair } = await import("./crypto");
             const pair = generateKeyPairAndNonce();
             saveKeyPair(pair);
-            const url = `${urlInput.value.replace(/\/$/,"")}/user-api-key/new?` +
+            const url = `${urlInput.value.replace(/\/$/, "")}/user-api-key/new?` +
                 `application_name=Obsidian%20Discourse%20Plugin&client_id=obsidian-${Date.now()}&scopes=read,write&public_key=${encodeURIComponent(pair.publicKeyPem)}&nonce=${pair.nonce}`;
             window.open(url, '_blank');
             new Notice(t('AUTH_LINK_GENERATED'), 8000);

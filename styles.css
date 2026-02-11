@@ -940,3 +940,111 @@ If your plugin does not need CSS, delete this file.
   transform: translateY(-1px);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
+
+/* Custom Category Dropdown Styles */
+.ptd-dropdown-wrapper {
+  position: relative;
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.ptd-dropdown-trigger {
+  width: 100%;
+  padding: 8px 12px;
+  border: 2px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  background-color: var(--background-primary);
+  color: var(--text-normal);
+  font-size: 14px;
+  min-height: 42px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all 0.2s ease;
+}
+
+.ptd-dropdown-trigger:hover {
+  border-color: var(--background-modifier-border-hover);
+}
+
+.ptd-dropdown-trigger.active {
+  border-color: var(--interactive-accent);
+  box-shadow: 0 0 0 2px var(--interactive-accent-hover);
+}
+
+.ptd-dropdown-trigger .selected-value {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  overflow: hidden;
+}
+
+.ptd-dropdown-trigger .dropdown-arrow {
+  margin-left: 8px;
+  font-size: 10px;
+  opacity: 0.7;
+  transition: transform 0.2s ease;
+}
+
+.ptd-dropdown-trigger.active .dropdown-arrow {
+  transform: rotate(180deg);
+}
+
+.ptd-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  max-height: 300px;
+  overflow-y: auto;
+  background-color: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-m);
+  box-shadow: var(--shadow-l);
+  z-index: 1002;
+  margin-top: 4px;
+  display: none;
+}
+
+.ptd-dropdown-menu.show {
+  display: block;
+  animation: fadeIn 0.1s ease;
+}
+
+.ptd-dropdown-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-normal);
+  transition: background-color 0.1s ease;
+}
+
+.ptd-dropdown-item:hover {
+  background-color: var(--background-modifier-hover);
+}
+
+.ptd-dropdown-item.selected {
+  background-color: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
+
+.category-color-block {
+  width: 12px;
+  height: 12px;
+  display: inline-block;
+  flex-shrink: 0;
+  border-radius: 2px;
+}
+
+/* Indentation for subcategories */
+.ptd-dropdown-item.depth-1 {
+  padding-left: 28px;
+}
+
+.ptd-dropdown-item.depth-2 {
+  padding-left: 44px;
+}

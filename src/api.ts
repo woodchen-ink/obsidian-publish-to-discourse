@@ -1,4 +1,5 @@
 import { App, requestUrl, TFile } from 'obsidian';
+import { DiscourseCategory } from './types';
 import { DiscourseSyncSettings } from './config';
 import { NotifyUser } from './notification';
 import { t } from './i18n';
@@ -12,7 +13,7 @@ export class DiscourseAPI {
     constructor(
         private app: App,
         private settings: DiscourseSyncSettings
-    ) {}
+    ) { }
 
     // 解析API错误响应
     private parseErrorResponse(response: any): string {
@@ -47,7 +48,7 @@ export class DiscourseAPI {
     }
 
     // 上传图片到Discourse
-    async uploadImage(file: TFile): Promise<{shortUrl: string, fullUrl?: string} | null> {
+    async uploadImage(file: TFile): Promise<{ shortUrl: string, fullUrl?: string } | null> {
         try {
             const imgfile = await this.app.vault.readBinary(file);
             const boundary = genBoundary();
@@ -86,7 +87,7 @@ export class DiscourseAPI {
             if (response.status == 200) {
                 const jsonResponse = response.json;
                 let fullUrl: string | undefined;
-                
+
                 // 处理完整URL的拼接
                 if (jsonResponse.url) {
                     // 如果返回的url已经是完整URL（包含http/https），直接使用
@@ -99,14 +100,14 @@ export class DiscourseAPI {
                         fullUrl = `${baseUrl}${urlPath}`;
                     }
                 }
-                
+
                 return {
                     shortUrl: jsonResponse.short_url,
                     fullUrl: fullUrl
                 };
             } else {
                 const errorDetail = this.parseErrorResponse(response);
-                const errorMessage = errorDetail 
+                const errorMessage = errorDetail
                     ? `Error uploading image (${response.status}): ${errorDetail}`
                     : `Error uploading image: ${response.status}`;
                 new NotifyUser(this.app, errorMessage).open();
@@ -157,7 +158,7 @@ export class DiscourseAPI {
                 }
             } else {
                 const errorDetail = this.parseErrorResponse(response);
-                const errorMessage = errorDetail 
+                const errorMessage = errorDetail
                     ? `${t('PUBLISH_FAILED')} (${response.status}): ${errorDetail}`
                     : `${t('PUBLISH_FAILED')} (${response.status})`;
                 return {
@@ -166,7 +167,7 @@ export class DiscourseAPI {
                 };
             }
         } catch (error) {
-            return { 
+            return {
                 success: false,
                 error: `${t('PUBLISH_FAILED')}: ${error.message || t('UNKNOWN_ERROR')}`
             };
@@ -180,7 +181,7 @@ export class DiscourseAPI {
             "User-Api-Key": this.settings.userApiKey,
             "Content-Type": "application/json"
         };
-        
+
         try {
             // 1. 先更新帖子内容
             const postResponse = await requestUrl({
@@ -194,26 +195,26 @@ export class DiscourseAPI {
                 headers,
                 throw: false
             });
-            
+
             if (postResponse.status !== 200) {
                 const errorDetail = this.parseErrorResponse(postResponse);
-                const errorMessage = errorDetail 
+                const errorMessage = errorDetail
                     ? `${t('UPDATE_FAILED')} (${postResponse.status}): ${errorDetail}`
                     : `${t('UPDATE_FAILED')} (${postResponse.status})`;
-                return { 
-                    success: false, 
+                return {
+                    success: false,
                     error: errorMessage
                 };
             }
-            
+
             // 2. 获取当前主题信息以检测是否需要更新标题/分类/标签
             const currentTopicInfo = await this.fetchTopicInfo(topicId);
-            
+
             // 检测是否需要更新主题信息
             const needsTitleUpdate = currentTopicInfo && await this.needsTitleUpdate(topicId, title);
             const needsCategoryUpdate = currentTopicInfo.categoryId !== category;
             const needsTagsUpdate = JSON.stringify(currentTopicInfo.tags?.sort()) !== JSON.stringify(tags?.sort());
-            
+
             // 3. 只在需要时更新主题信息
             if (needsTitleUpdate || needsCategoryUpdate || needsTagsUpdate) {
                 const updateResult = await this.updateTopicInfo(topicId, title, category, tags);
@@ -221,16 +222,16 @@ export class DiscourseAPI {
                     return updateResult;
                 }
             }
-            
+
             return { success: true };
         } catch (error) {
-            return { 
+            return {
                 success: false,
                 error: `${t('UPDATE_FAILED')}: ${error.message || t('UNKNOWN_ERROR')}`
             };
         }
     }
-    
+
     // 检查标题是否需要更新
     private async needsTitleUpdate(topicId: number, newTitle: string): Promise<boolean> {
         try {
@@ -242,12 +243,12 @@ export class DiscourseAPI {
                 },
                 throw: false
             });
-            
+
             if (response.status === 200) {
                 const currentTitle = response.json?.title;
                 return currentTitle !== newTitle;
             }
-            
+
             return true; // 如果获取失败，默认需要更新
         } catch (error) {
             return true; // 出错时默认需要更新
@@ -261,7 +262,7 @@ export class DiscourseAPI {
             "User-Api-Key": this.settings.userApiKey,
             "Content-Type": "application/json"
         };
-        
+
         try {
             const topicResponse = await requestUrl({
                 url: topicEndpoint,
@@ -275,12 +276,12 @@ export class DiscourseAPI {
                 headers,
                 throw: false
             });
-            
+
             if (topicResponse.status === 200) {
                 return { success: true };
             } else {
                 const errorDetail = this.parseErrorResponse(topicResponse);
-                const errorMessage = errorDetail 
+                const errorMessage = errorDetail
                     ? `${t('UPDATE_FAILED')} (${topicResponse.status}): ${errorDetail}`
                     : `${t('UPDATE_FAILED')} (${topicResponse.status})`;
                 return {
@@ -289,7 +290,7 @@ export class DiscourseAPI {
                 };
             }
         } catch (error) {
-            return { 
+            return {
                 success: false,
                 error: `${t('UPDATE_FAILED')}: ${error.message || t('UNKNOWN_ERROR')}`
             };
@@ -297,47 +298,53 @@ export class DiscourseAPI {
     }
 
     // 获取分类列表
-    async fetchCategories(): Promise<{ id: number; name: string }[]> {
+    async fetchCategories(): Promise<DiscourseCategory[]> {
         try {
             const url = `${this.settings.baseUrl}/categories.json?include_subcategories=true`;
             const headers: Record<string, string> = {
                 "User-Api-Key": this.settings.userApiKey
             };
-            
+
             const response = await requestUrl({
                 url,
                 method: "GET",
                 headers,
                 throw: false
             });
-            
+
             if (response.status === 200) {
                 const data = response.json;
-                const categories: { id: number; name: string }[] = [];
-                
+                const categories: DiscourseCategory[] = [];
+
                 if (data && data.category_list && data.category_list.categories) {
                     data.category_list.categories.forEach((category: any) => {
                         categories.push({
                             id: category.id,
-                            name: category.name
+                            name: category.name,
+                            color: category.color || 'FFFFFF',
+                            depth: 0,
+                            parent_category_id: undefined
                         });
-                        
+
                         // 添加子分类
                         if (category.subcategory_list) {
                             category.subcategory_list.forEach((subcategory: any) => {
                                 categories.push({
                                     id: subcategory.id,
-                                    name: `${category.name} > ${subcategory.name}`
+                                    name: subcategory.name,
+                                    color: subcategory.color || 'FFFFFF',
+                                    depth: 1,
+                                    parent_category_id: category.id
                                 });
                             });
                         }
                     });
                 }
-                
+
                 return categories;
             } else {
                 const errorDetail = this.parseErrorResponse(response);
-                const errorMessage = errorDetail 
+                const errorMessage = errorDetail
                     ? `Error fetching categories (${response.status}): ${errorDetail}`
                     : `Error fetching categories: ${response.status}`;
                 new NotifyUser(this.app, errorMessage).open();
@@ -356,29 +363,29 @@ export class DiscourseAPI {
             const headers: Record<string, string> = {
                 "User-Api-Key": this.settings.userApiKey
             };
-            
+
             const response = await requestUrl({
                 url,
                 method: "GET",
                 headers,
                 throw: false
             });
-            
+
             if (response.status === 200) {
                 const data = response.json;
                 const tags: { name: string; canCreate: boolean }[] = [];
-                
+
                 if (data && data.tags) {
                     const canCreateTags = await this.checkCanCreateTags();
-                    
+
                     // 处理所有标签（包括tag_groups中的标签）
                     const allTags = new Map<string, { name: string; count: number }>();
-                    
+
                     // 添加普通标签
                     data.tags.forEach((tag: any) => {
                         allTags.set(tag.name, { name: tag.name, count: tag.count || 0 });
                     });
-                    
+
                     // 添加tag_groups中的标签
                     if (data.extras && data.extras.tag_groups) {
                         data.extras.tag_groups.forEach((group: any) => {
@@ -395,7 +402,7 @@ export class DiscourseAPI {
                             }
                         });
                     }
-                    
+
                     // 按count数量排序，转换为最终格式
                     const sortedTags = Array.from(allTags.values())
                         .sort((a, b) => b.count - a.count)
@@ -403,14 +410,14 @@ export class DiscourseAPI {
                             name: tag.name,
                             canCreate: canCreateTags
                         }));
-                    
+
                     tags.push(...sortedTags);
                 }
-                
+
                 return tags;
             } else {
                 const errorDetail = this.parseErrorResponse(response);
-                const errorMessage = errorDetail 
+                const errorMessage = errorDetail
                     ? `Error fetching tags (${response.status}): ${errorDetail}`
                     : `Error fetching tags: ${response.status}`;
                 new NotifyUser(this.app, errorMessage).open();
@@ -429,21 +436,21 @@ export class DiscourseAPI {
             const headers: Record<string, string> = {
                 "User-Api-Key": this.settings.userApiKey
             };
-            
+
             const response = await requestUrl({
                 url,
                 method: "GET",
                 headers,
                 throw: false
             });
-            
+
             if (response.status === 200) {
                 const data = response.json;
                 if (data && data.can_create_tag) {
                     return data.can_create_tag;
                 }
             }
-            
+
             return false;
         } catch (error) {
             return false;
@@ -458,20 +465,20 @@ export class DiscourseAPI {
                 message: t('MISSING_SETTINGS')
             };
         }
-        
+
         try {
             const url = `${this.settings.baseUrl}/site.json`;
             const headers: Record<string, string> = {
                 "User-Api-Key": this.settings.userApiKey
             };
-            
+
             const response = await requestUrl({
                 url,
                 method: "GET",
                 headers,
                 throw: false
             });
-            
+
             if (response.status === 200) {
                 const data = response.json;
                 if (data) {
@@ -487,7 +494,7 @@ export class DiscourseAPI {
                 }
             } else {
                 const errorDetail = this.parseErrorResponse(response);
-                const errorMessage = errorDetail 
+                const errorMessage = errorDetail
                     ? `${t('API_KEY_INVALID')} (${response.status}): ${errorDetail}`
                     : `${t('API_KEY_INVALID')} (${response.status})`;
                 return {
@@ -510,14 +517,14 @@ export class DiscourseAPI {
             const headers: Record<string, string> = {
                 "User-Api-Key": this.settings.userApiKey
             };
-            
+
             const response = await requestUrl({
                 url,
                 method: "GET",
                 headers,
                 throw: false
             });
-            
+
             if (response.status === 200) {
                 const data = response.json;
                 return {
@@ -525,7 +532,7 @@ export class DiscourseAPI {
                     categoryId: data?.category_id
                 };
             }
-            
+
             return { tags: [] };
         } catch (error) {
             new NotifyUser(this.app, `Exception while fetching topic info: ${error}`).open();
